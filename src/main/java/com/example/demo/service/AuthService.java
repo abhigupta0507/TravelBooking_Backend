@@ -87,7 +87,7 @@ public class AuthService {
 
         // Generate tokens
         String accessToken = jwtUtil.generateAccessToken(userId, request.getEmail(), userType);
-        String refreshToken = jwtUtil.generateRefreshToken(userId, request.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(userId, request.getEmail(),userType);
 
         return new AuthResponse(accessToken, refreshToken, userType, userId,
                 request.getFirstName(), request.getLastName(), request.getEmail());
@@ -108,7 +108,7 @@ public class AuthService {
         // For now, we'll just proceed with login
 
         String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getUserType());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail(),user.getUserType());
 
         return new AuthResponse(accessToken, refreshToken, user.getUserType(), user.getId(),
                 user.getFirstName(), user.getLastName(), user.getEmail());
@@ -129,7 +129,7 @@ public class AuthService {
         }
 
         String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getUserType());
-        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail());
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail(),user.getUserType());
 
         return new AuthResponse(accessToken, newRefreshToken, user.getUserType(), user.getId(),
                 user.getFirstName(), user.getLastName(), user.getEmail());

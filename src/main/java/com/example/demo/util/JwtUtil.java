@@ -33,9 +33,10 @@ public class JwtUtil {
         return createToken(claims, email, accessTokenExpiration);
     }
 
-    public String generateRefreshToken(Integer userId, String email) {
+    public String generateRefreshToken(Integer userId, String email,String userType) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
+        claims.put("userType",userType);
         return createToken(claims, email, refreshTokenExpiration);
     }
 
