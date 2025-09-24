@@ -121,15 +121,17 @@ public class AuthService {
 
         String email = jwtUtil.getEmailFromToken(refreshToken);
         Integer userId = jwtUtil.getUserIdFromToken(refreshToken);
+        String userType = jwtUtil.getUserTypeFromToken(refreshToken);
 
         // Try to find user in all tables
-        User user = findUserById(userId);
+        User user = authDao.findUserByEmailAndType(email,userType);
+        System.out.println(user);
         if (user == null) {
             throw new RuntimeException("User not found");
         }
 
-        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getUserType());
-        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail(),user.getUserType());
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), userType);
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail(),userType);
 
         return new AuthResponse(accessToken, newRefreshToken, user.getUserType(), user.getId(),
                 user.getFirstName(), user.getLastName(), user.getEmail());

@@ -37,6 +37,7 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("userType",userType);
+        System.out.println("UserType: "+userType);
         return createToken(claims, email, refreshTokenExpiration);
     }
 
