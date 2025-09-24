@@ -12,13 +12,16 @@ public class Staff {
     private String email;
     private String phone;
     private Date joining_date;
+    private String password;
     private String role;
     private BigDecimal salary;
 
-    public Staff() {}
+    public Staff(String password) {
+        this.password = password;
+    }
 
     public Staff(Integer staff_id, String employee_code, String first_name, String last_name,
-                 String email, String phone, Date joining_date, String role, BigDecimal salary) {
+                 String email, String phone, Date joining_date, String password, String role, BigDecimal salary) {
         this.staff_id = staff_id;
         this.employee_code = employee_code;
         this.first_name = first_name;
@@ -26,8 +29,17 @@ public class Staff {
         this.email = email;
         this.phone = phone;
         this.joining_date = joining_date;
+        this.password = password;
         this.role = role;
         this.salary = salary;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public Integer getStaff_id() { return staff_id; }

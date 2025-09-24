@@ -1,5 +1,6 @@
 package com.example.demo.dao;
 
+import com.example.demo.dto.SignupRequest;
 import com.example.demo.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -52,26 +53,26 @@ public class AuthDao {
     }
 
     public User findCustomerByEmail(String email) {
-        String sql = "SELECT customer_id, first_name, last_name, email, phone FROM Customer WHERE email = ?";
+        String sql = "SELECT customer_id, first_name, last_name, email,password, phone FROM Customer WHERE email = ?";
         return jdbcTemplate.queryForObject(sql, new UserRowMapper("CUSTOMER"), email);
     }
 
     private User findVendorByEmail(String email) {
-        String sql = "SELECT vendor_id, contact_person_first_name, contact_person_last_name, email, phone FROM Vendor WHERE email = ?";
+        String sql = "SELECT vendor_id, contact_person_first_name, contact_person_last_name, email,password, phone FROM Vendor WHERE email = ?";
         return jdbcTemplate.queryForObject(sql, new VendorRowMapper(), email);
     }
 
     public User findStaffByEmail(String email) {
-        String sql = "SELECT staff_id, first_name, last_name, email, phone, role FROM Staff WHERE email = ?";
+        String sql = "SELECT staff_id, first_name, last_name, email,password, phone, role FROM Staff WHERE email = ?";
         return jdbcTemplate.queryForObject(sql, new StaffRowMapper(), email);
     }
 
-    public Integer createCustomer(String firstName, String lastName, String email, String phone,
+    public Integer createCustomer(String firstName, String lastName, String email, String password,String phone,
                                   String dateOfBirth, String gender, String emergencyContactFirstName,
-                                  String emergencyContactLastName, String emergencyContactNo) {
-        String sql = "INSERT INTO Customer (first_name, last_name, phone, email, date_of_birth, gender, " +
+                                  String emergencyContactLastName, String emergencyContactNo,String notImp) {
+        String sql = "INSERT INTO Customer (first_name, last_name, phone, email,password, date_of_birth, gender, " +
                 "emergency_contact_first_name, emergency_contact_last_name, emergency_contact_no, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?,  ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -80,12 +81,13 @@ public class AuthDao {
             ps.setString(2, lastName);
             ps.setString(3, phone);
             ps.setString(4, email);
-            ps.setDate(5, dateOfBirth != null ? java.sql.Date.valueOf(dateOfBirth) : null);
-            ps.setString(6, gender);
-            ps.setString(7, emergencyContactFirstName);
-            ps.setString(8, emergencyContactLastName);
-            ps.setString(9, emergencyContactNo);
-            ps.setObject(10, LocalDateTime.now());
+            ps.setString(5,password);
+            ps.setDate(6, dateOfBirth != null ? java.sql.Date.valueOf(dateOfBirth) : null);
+            ps.setString(7, gender);
+            ps.setString(8, emergencyContactFirstName);
+            ps.setString(9, emergencyContactLastName);
+            ps.setString(10, emergencyContactNo);
+            ps.setObject(11, LocalDateTime.now());
             return ps;
         }, keyHolder);
 
@@ -93,9 +95,9 @@ public class AuthDao {
     }
 
     public Integer createVendor(String vendorName, String serviceType, String contactPersonFirstName,
-                                String contactPersonLastName, String email, String phone) {
+                                String contactPersonLastName, String email, String password, String phone) {
         String sql = "INSERT INTO Vendor (vendor_name, service_type, contact_person_first_name, " +
-                "contact_person_last_name, email, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "contact_person_last_name, email,password, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -105,17 +107,18 @@ public class AuthDao {
             ps.setString(3, contactPersonFirstName);
             ps.setString(4, contactPersonLastName);
             ps.setString(5, email);
-            ps.setString(6, phone);
-            ps.setString(7, "ACTIVE");
+            ps.setString(6,password);
+            ps.setString(7, phone);
+            ps.setString(8, "ACTIVE");
             return ps;
         }, keyHolder);
 
         return keyHolder.getKey().intValue();
     }
 
-    public Integer createStaff(String firstName, String lastName, String email, String phone, String role) {
-        String sql = "INSERT INTO Staff (employee_code, first_name, last_name, email, phone, " +
-                "joining_date, role, salary) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public Integer createStaff(String firstName, String lastName, String email, String password,String phone, String role) {
+        String sql = "INSERT INTO Staff (employee_code, first_name, last_name, email, password, phone, " +
+                "joining_date, role, salary) VALUES (?, ?, ?, ?, ?,? , ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
@@ -124,14 +127,19 @@ public class AuthDao {
             ps.setString(2, firstName);
             ps.setString(3, lastName);
             ps.setString(4, email);
-            ps.setString(5, phone);
-            ps.setDate(6, java.sql.Date.valueOf(LocalDate.now()));
-            ps.setString(7, role);
-            ps.setBigDecimal(8, new java.math.BigDecimal("25000.00")); // Default salary
+            ps.setString(5,password);
+            ps.setString(6, phone);
+            ps.setDate(7, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setString(8, role);
+            ps.setBigDecimal(9, new java.math.BigDecimal("25000.00")); // Default salary
             return ps;
         }, keyHolder);
 
         return keyHolder.getKey().intValue();
+    }
+
+    public boolean checkRequiredFieldsPresent(SignupRequest request) {
+        return (request.getEmail() != null) && (request.getFirstName() != null) && request.getPhone() != null && request.getDateOfBirth() != null;
     }
 
     private static class UserRowMapper implements RowMapper<User> {
@@ -148,7 +156,9 @@ public class AuthDao {
             user.setFirstName(rs.getString(2));
             user.setLastName(rs.getString(3));
             user.setEmail(rs.getString(4));
-            user.setPhone(rs.getString(5));
+            user.setPassword(rs.getString(5));
+            user.setPhone(rs.getString(6));
+
             user.setUserType(userType);
             return user;
         }
@@ -162,7 +172,8 @@ public class AuthDao {
             user.setFirstName(rs.getString(2));
             user.setLastName(rs.getString(3));
             user.setEmail(rs.getString(4));
-            user.setPhone(rs.getString(5));
+            user.setPassword(rs.getString(5));
+            user.setPhone(rs.getString(6));
             user.setUserType("VENDOR");
             return user;
         }
@@ -176,8 +187,9 @@ public class AuthDao {
             user.setFirstName(rs.getString(2));
             user.setLastName(rs.getString(3));
             user.setEmail(rs.getString(4));
-            user.setPhone(rs.getString(5));
-            user.setRole(rs.getString(6));
+            user.setPassword(rs.getString(5));
+            user.setPhone(rs.getString(6));
+            user.setRole(rs.getString(7));
             user.setUserType("STAFF");
             return user;
         }

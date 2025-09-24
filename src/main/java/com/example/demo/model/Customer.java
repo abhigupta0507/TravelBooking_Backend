@@ -10,6 +10,7 @@ public class Customer {
     private String last_name;
     private String phone;
     private String email;
+    private String password;
     private LocalDate date_of_birth;
     private String gender;
     private String emergency_contact_first_name;
@@ -17,9 +18,11 @@ public class Customer {
     private String emergency_contact_no;
     private LocalDateTime created_at;
 
-    public Customer() {}
+    public Customer(String password) {
+        this.password = password;
+    }
 
-    public Customer(Integer customer_id, String first_name, String last_name, String phone, String email,
+    public Customer(Integer customer_id, String first_name, String last_name, String phone, String email, String password,
                     LocalDate date_of_birth, String gender, String emergency_contact_first_name,
                     String emergency_contact_last_name, String emergency_contact_no, LocalDateTime created_at) {
         this.customer_id = customer_id;
@@ -27,6 +30,7 @@ public class Customer {
         this.last_name = last_name;
         this.phone = phone;
         this.email = email;
+        this.password = password;
         this.date_of_birth = date_of_birth;
         this.gender = gender;
         this.emergency_contact_first_name = emergency_contact_first_name;
@@ -45,6 +49,14 @@ public class Customer {
 
     public String getFirst_name() {
         return first_name;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public void setFirst_name(String first_name) {

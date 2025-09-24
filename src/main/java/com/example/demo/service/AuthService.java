@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class AuthService {
 
@@ -23,6 +25,9 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     public AuthResponse signup(SignupRequest request) {
+        if(!authDao.checkRequiredFieldsPresent(request)){
+            throw new RuntimeException("Some required fields are empty");
+        }
         // Check if email already exists
         if (authDao.emailExists(request.getEmail())) {
             throw new RuntimeException("Email already exists");
@@ -46,18 +51,22 @@ public class AuthService {
         Integer userId = null;
         String userType = request.getUserType().toUpperCase();
 
+        String notImp="1";
+
         switch (userType) {
             case "CUSTOMER":
                 userId = authDao.createCustomer(
                         request.getFirstName(),
                         request.getLastName(),
                         request.getEmail(),
+                        request.getPassword(),
                         request.getPhone(),
                         request.getDateOfBirth(),
                         request.getGender(),
                         request.getEmergencyContactFirstName(),
                         request.getEmergencyContactLastName(),
-                        request.getEmergencyContactNo()
+                        request.getEmergencyContactNo(),
+                        notImp
                 );
                 break;
             case "VENDOR":
@@ -67,6 +76,7 @@ public class AuthService {
                         request.getContactPersonFirstName() != null ? request.getContactPersonFirstName() : request.getFirstName(),
                         request.getContactPersonLastName() != null ? request.getContactPersonLastName() : request.getLastName(),
                         request.getEmail(),
+                        request.getPassword(),
                         request.getPhone()
                 );
                 break;
@@ -76,6 +86,7 @@ public class AuthService {
                         request.getLastName(),
                         request.getEmail(),
                         request.getPhone(),
+                        request.getPassword(),
                         request.getRole().toUpperCase()
                 );
                 break;
@@ -101,6 +112,10 @@ public class AuthService {
         User user = authDao.findUserByEmailAndType(email, userType);
         if (user == null) {
             throw new RuntimeException("User not found");
+        }
+
+        if(!Objects.equals(user.getPassword(), password)){
+            throw new RuntimeException("Password not match!");
         }
 
         // For this simple implementation, we're not storing passwords in a separate table

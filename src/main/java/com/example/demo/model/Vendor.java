@@ -8,6 +8,7 @@ public class Vendor {
     private String contact_person_first_name;
     private String contact_person_last_name;
     private String email;
+    private String password;
     private String phone;
     private String street_name;
     private String city;
@@ -18,11 +19,13 @@ public class Vendor {
     private String ifsc_code;
     private String status;
 
-    public Vendor() {}
+    public Vendor(String password) {
+        this.password = password;
+    }
 
     public Vendor(int vendor_id, String vendor_name, String service_type,
                   String contact_person_first_name, String contact_person_last_name,
-                  String email, String phone, String street_name, String city,
+                  String email, String password, String phone, String street_name, String city,
                   String state, String pin, java.math.BigDecimal amt_due,
                   String account_no, String ifsc_code, String status) {
         this.vendor_id = vendor_id;
@@ -31,6 +34,7 @@ public class Vendor {
         this.contact_person_first_name = contact_person_first_name;
         this.contact_person_last_name = contact_person_last_name;
         this.email = email;
+        this.password = password;
         this.phone = phone;
         this.street_name = street_name;
         this.city = city;
@@ -40,6 +44,14 @@ public class Vendor {
         this.account_no = account_no;
         this.ifsc_code = ifsc_code;
         this.status = status;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public int getVendor_id() { return vendor_id; }
