@@ -12,6 +12,7 @@ public class PackageOverview {
     private String status;
 
 
+    private int price;
     private Float avg_rating;
 
 
@@ -19,15 +20,24 @@ public class PackageOverview {
     public PackageOverview() {
     }
 
-    public PackageOverview(String name, String tour_type, String itinerary_summary, int duration_days, int max_capacity, String image_url, String status, Float avg_rating) {
+    public PackageOverview(String name, String tour_type, String itinerary_summary, int duration_days,int price, int max_capacity, String image_url, String status, Float avg_rating) {
         this.name = name;
         this.tour_type = tour_type;
         this.itinerary_summary = itinerary_summary;
         this.duration_days = duration_days;
+        this.price=price;
         this.max_capacity = max_capacity;
         this.image_url = image_url;
         this.status = status;
         this.avg_rating = avg_rating;
+    }
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
     }
 
     public int getPackageId() {
@@ -113,6 +123,7 @@ public class PackageOverview {
                 ", max_capacity=" + max_capacity +
                 ", image_url='" + image_url + '\'' +
                 ", status='" + status + '\'' +
+                ", price=" + price +
                 ", avg_rating=" + avg_rating +
                 '}';
     }

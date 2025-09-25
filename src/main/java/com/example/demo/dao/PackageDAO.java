@@ -28,14 +28,11 @@ public class PackageDAO {
         thePackage.setName(rs.getString("name"));
         thePackage.setImage_url(rs.getString("image_url"));
         thePackage.setDuration_days(rs.getInt("duration_days"));
+        thePackage.setPrice(rs.getInt("price"));
         thePackage.setMax_capacity(rs.getInt("max_capacity"));
         thePackage.setItinerary_summary(rs.getString("itinerary_summary"));
         thePackage.setStatus(rs.getString("status"));
-        thePackage.setAvg_rating(rs.getFloat("avg_rating")); // Ensure this line is present and correct
-//        doctor.setPost(rs.getString("Post"));
-//        doctor.setDepartment(rs.getString("Department"));
-//        doctor.setSpecialization(rs.getString("Specialization"));
-//        doctor.setPassword(rs.getString("Password")); // Ensure this line is present and correct
+        thePackage.setAvg_rating(rs.getFloat("avg_rating"));
         return thePackage;
     }
 }
