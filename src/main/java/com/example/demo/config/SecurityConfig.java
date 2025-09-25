@@ -28,6 +28,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/blogs/**").permitAll()
                         .anyRequest().authenticated()
+                        .requestMatchers("/api/packages/**").permitAll()
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

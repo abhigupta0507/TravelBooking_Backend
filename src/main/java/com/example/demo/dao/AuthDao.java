@@ -158,10 +158,10 @@ public class AuthDao {
                 "email, password, phone, street_name, city, state, pin, amt_due, account_no, ifsc_code, status" +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        System.out.println("Creating vendor with name: " + vendorName);
-        System.out.println("Service type: " + serviceType);
-        System.out.println("Contact person: " + contactPersonFirstName + " " + contactPersonLastName);
-        System.out.println("Amount due: " + amountDue);
+//        System.out.println("Creating vendor with name: " + vendorName);
+//        System.out.println("Service type: " + serviceType);
+//        System.out.println("Contact person: " + contactPersonFirstName + " " + contactPersonLastName);
+//        System.out.println("Amount due: " + amountDue);
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
