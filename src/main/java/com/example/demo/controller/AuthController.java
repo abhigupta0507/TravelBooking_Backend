@@ -19,6 +19,8 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     public AuthController(AuthService authService, JwtUtil jwtUtil) {
@@ -29,6 +31,7 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<AuthResponse>> signup(@RequestBody SignupRequest request) {
         try {
+            System.out.println(request);
             AuthResponse response = authService.signup(request);
             return ResponseEntity.ok(new ApiResponse<>(true, "User registered successfully", response));
         } catch (Exception e) {
@@ -67,33 +70,28 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String authHeader){
+    public ResponseEntity<ApiResponse<Object>> getProfile(@RequestHeader("Authorization") String authHeader){
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid Authorization header");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
         }
-        String token = authHeader.substring(7);
-        System.out.println(token);
-        try{
 
+        String token = authHeader.substring(7);
+
+        try {
             String userType = jwtUtil.getUserTypeFromToken(token);
-            String email= jwtUtil.getEmailFromToken(token);
-            System.out.println(userType);
-            User user= authService.getUserByEmail(email,userType);
-            return ResponseEntity.ok(new ApiResponse<>(true,"Successfully fetched profile", user));
-//            if(userType=="CUSTOMER"){
-//                Customer theCustomer = authService.getCustomerByEmail(email);
-//                return ResponseEntity.ok(new ApiResponse<>(true,"Profile fetched Successfully", theCustomer));
-//            }
-//            if(userType=="VENDOR"){
-//                Vendor theVendor = authService.getVendorByEmail(email);
-//                return ResponseEntity.ok(new ApiResponse<>(true,"Profile fetched Successfully", theCustomer));
-//            }
-//            if(userType=="STAFF"){
-//                Staff theStaff = authService.getStaffByEmail(email);
-//                return ResponseEntity.ok(new ApiResponse<>(true,"Profile fetched Successfully", theCustomer));
-//            }
-        }
-        catch(Exception e){
+            String email = jwtUtil.getEmailFromToken(token);
+
+            Object user = authService.getUserByEmail(email, userType);
+
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(false, "User not found", null));
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Successfully fetched profile", user));
+
+        } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         }

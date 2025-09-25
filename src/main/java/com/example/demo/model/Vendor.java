@@ -1,7 +1,6 @@
 package com.example.demo.model;
 
-
-public class Vendor {
+public class Vendor extends User {
     private int vendor_id;
     private String vendor_name;
     private String service_type;
@@ -19,7 +18,12 @@ public class Vendor {
     private String ifsc_code;
     private String status;
 
+    public Vendor() {
+        super();
+    }
+
     public Vendor(String password) {
+        super();
         this.password = password;
     }
 
@@ -28,6 +32,7 @@ public class Vendor {
                   String email, String password, String phone, String street_name, String city,
                   String state, String pin, java.math.BigDecimal amt_due,
                   String account_no, String ifsc_code, String status) {
+        super(email, phone, password, "VENDOR");
         this.vendor_id = vendor_id;
         this.vendor_name = vendor_name;
         this.service_type = service_type;
@@ -46,12 +51,38 @@ public class Vendor {
         this.status = status;
     }
 
+    // Getters and Setters
+    @Override
     public String getPassword() {
         return password;
     }
 
+    @Override
     public void setPassword(String password) {
         this.password = password;
+        super.setPassword(password);
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
+    }
+
+    @Override
+    public void setEmail(String email) {
+        this.email = email;
+        super.setEmail(email);
+    }
+
+    @Override
+    public String getPhone() {
+        return phone;
+    }
+
+    @Override
+    public void setPhone(String phone) {
+        this.phone = phone;
+        super.setPhone(phone);
     }
 
     public int getVendor_id() { return vendor_id; }
@@ -64,16 +95,14 @@ public class Vendor {
     public void setService_type(String service_type) { this.service_type = service_type; }
 
     public String getContact_person_first_name() { return contact_person_first_name; }
-    public void setContact_person_first_name(String contact_person_first_name) { this.contact_person_first_name = contact_person_first_name; }
+    public void setContact_person_first_name(String contact_person_first_name) {
+        this.contact_person_first_name = contact_person_first_name;
+    }
 
     public String getContact_person_last_name() { return contact_person_last_name; }
-    public void setContact_person_last_name(String contact_person_last_name) { this.contact_person_last_name = contact_person_last_name; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public void setContact_person_last_name(String contact_person_last_name) {
+        this.contact_person_last_name = contact_person_last_name;
+    }
 
     public String getStreet_name() { return street_name; }
     public void setStreet_name(String street_name) { this.street_name = street_name; }
@@ -108,6 +137,7 @@ public class Vendor {
                 ", contact_person_first_name='" + contact_person_first_name + '\'' +
                 ", contact_person_last_name='" + contact_person_last_name + '\'' +
                 ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
                 ", phone='" + phone + '\'' +
                 ", street_name='" + street_name + '\'' +
                 ", city='" + city + '\'' +
@@ -117,6 +147,7 @@ public class Vendor {
                 ", account_no='" + account_no + '\'' +
                 ", ifsc_code='" + ifsc_code + '\'' +
                 ", status='" + status + '\'' +
+                ", userType='" + getUserType() + '\'' +
                 '}';
     }
 }

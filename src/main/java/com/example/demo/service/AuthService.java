@@ -3,8 +3,10 @@ package com.example.demo.service;
 import com.example.demo.dao.AuthDao;
 import com.example.demo.dto.SignupRequest;
 import com.example.demo.dto.AuthResponse;
+import com.example.demo.model.Customer;
 import com.example.demo.model.Staff;
 import com.example.demo.model.User;
+import com.example.demo.model.Vendor;
 import com.example.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,9 +27,6 @@ public class AuthService {
     private PasswordEncoder passwordEncoder;
 
     public AuthResponse signup(SignupRequest request) {
-        if(!authDao.checkRequiredFieldsPresent(request)){
-            throw new RuntimeException("Some required fields are empty");
-        }
         // Check if email already exists
         if (authDao.emailExists(request.getEmail())) {
             throw new RuntimeException("Email already exists");
@@ -38,7 +37,6 @@ public class AuthService {
             throw new RuntimeException("Invalid user type");
         }
 
-
         // Validate role for staff
         if ("STAFF".equalsIgnoreCase(request.getUserType())) {
             if (request.getRole() == null ||
@@ -48,10 +46,11 @@ public class AuthService {
             }
         }
 
+        // Encrypt password
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+
         Integer userId = null;
         String userType = request.getUserType().toUpperCase();
-
-        String notImp="1";
 
         switch (userType) {
             case "CUSTOMER":
@@ -59,25 +58,42 @@ public class AuthService {
                         request.getFirstName(),
                         request.getLastName(),
                         request.getEmail(),
-                        request.getPassword(),
+                        hashedPassword, // Use encrypted password
                         request.getPhone(),
                         request.getDateOfBirth(),
                         request.getGender(),
                         request.getEmergencyContactFirstName(),
                         request.getEmergencyContactLastName(),
                         request.getEmergencyContactNo(),
-                        notImp
+                        "1"
                 );
                 break;
             case "VENDOR":
+                // Debug prints to see what's being passed
+                System.out.println("=== VENDOR SIGNUP DEBUG ===");
+                System.out.println("VendorName: " + request.getVendorName());
+                System.out.println("ServiceType: " + request.getServiceType());
+                System.out.println("ContactPersonFirstName: " + request.getContactPersonFirstName());
+                System.out.println("ContactPersonLastName: " + request.getContactPersonLastName());
+                System.out.println("Amount_due: " + request.getAmount_due());
+                System.out.println("FirstName: " + request.getFirstName());
+                System.out.println("LastName: " + request.getLastName());
+
                 userId = authDao.createVendor(
-                        request.getFirstName() + " " + request.getLastName() + " Services", // vendor_name
+                        request.getVendorName(),
                         request.getServiceType(),
                         request.getContactPersonFirstName() != null ? request.getContactPersonFirstName() : request.getFirstName(),
                         request.getContactPersonLastName() != null ? request.getContactPersonLastName() : request.getLastName(),
                         request.getEmail(),
-                        request.getPassword(),
-                        request.getPhone()
+                        hashedPassword, // Use encrypted password
+                        request.getPhone(),
+                        request.getCity(),
+                        request.getAmount_due(),
+                        request.getAccount_no(),
+                        request.getIfsc_code(),
+                        request.getPin(),
+                        request.getState(),
+                        request.getStreet_name()
                 );
                 break;
             case "STAFF":
@@ -85,8 +101,8 @@ public class AuthService {
                         request.getFirstName(),
                         request.getLastName(),
                         request.getEmail(),
+                        hashedPassword, // Use encrypted password
                         request.getPhone(),
-                        request.getPassword(),
                         request.getRole().toUpperCase()
                 );
                 break;
@@ -98,10 +114,9 @@ public class AuthService {
 
         // Generate tokens
         String accessToken = jwtUtil.generateAccessToken(userId, request.getEmail(), userType);
-        String refreshToken = jwtUtil.generateRefreshToken(userId, request.getEmail(),userType);
+        String refreshToken = jwtUtil.generateRefreshToken(userId, request.getEmail(), userType);
 
-        return new AuthResponse(accessToken, refreshToken, userType, userId,
-                request.getFirstName(), request.getLastName(), request.getEmail());
+        return new AuthResponse(accessToken, refreshToken, userType, userId, request.getEmail());
     }
 
     public AuthResponse login(String email, String password, String userType) {
@@ -109,24 +124,41 @@ public class AuthService {
             throw new RuntimeException("Invalid user type");
         }
 
-        User user = authDao.findUserByEmailAndType(email, userType);
-        if (user == null) {
-            throw new RuntimeException("User not found");
+        if(userType.equals("CUSTOMER")){
+            Customer theCustomer = authDao.findCustomerByEmail(email);
+            if (theCustomer == null) {
+                throw new RuntimeException("Customer not found");
+            }
+
+            // Use password encoder to verify password
+            if(!passwordEncoder.matches(password, theCustomer.getPassword())){
+                throw new RuntimeException("Invalid password");
+            }
+
+            String accessToken = jwtUtil.generateAccessToken(theCustomer.getCustomer_id(), theCustomer.getEmail(),"CUSTOMER");
+            String refreshToken = jwtUtil.generateRefreshToken(theCustomer.getCustomer_id(), theCustomer.getEmail(),"CUSTOMER");
+
+            return new AuthResponse(accessToken, refreshToken, "CUSTOMER", theCustomer.getCustomer_id(), theCustomer.getEmail());
         }
+        else if(userType.equals("VENDOR")){
+            Vendor theVendor = authDao.findVendorByEmail(email);
+            if (theVendor == null) {
+                throw new RuntimeException("Vendor not found");
+            }
 
-        if(!Objects.equals(user.getPassword(), password)){
-            throw new RuntimeException("Password not match!");
+            // Use password encoder to verify password
+            if(!passwordEncoder.matches(password, theVendor.getPassword())){
+                throw new RuntimeException("Invalid password");
+            }
+
+            String accessToken = jwtUtil.generateAccessToken(theVendor.getVendor_id(), theVendor.getEmail(), "VENDOR");
+            String refreshToken = jwtUtil.generateRefreshToken(theVendor.getVendor_id(), theVendor.getEmail(),"VENDOR");
+
+            return new AuthResponse(accessToken, refreshToken, "VENDOR", theVendor.getVendor_id(), theVendor.getEmail());
         }
-
-        // For this simple implementation, we're not storing passwords in a separate table
-        // You might want to extend this to include password verification
-        // For now, we'll just proceed with login
-
-        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), user.getUserType());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail(),user.getUserType());
-
-        return new AuthResponse(accessToken, refreshToken, user.getUserType(), user.getId(),
-                user.getFirstName(), user.getLastName(), user.getEmail());
+        else{
+            throw new RuntimeException("Invalid user type for login");
+        }
     }
 
     public AuthResponse refreshToken(String refreshToken) {
@@ -138,51 +170,39 @@ public class AuthService {
         Integer userId = jwtUtil.getUserIdFromToken(refreshToken);
         String userType = jwtUtil.getUserTypeFromToken(refreshToken);
 
-        // Try to find user in all tables
-        User user = authDao.findUserByEmailAndType(email,userType);
-        System.out.println(user);
-        if (user == null) {
-            throw new RuntimeException("User not found");
+        if (Objects.equals(userType, "CUSTOMER")) {
+            Customer theCustomer = authDao.findCustomerByEmail(email);
+            if (theCustomer == null) {
+                throw new RuntimeException("Customer not found");
+            }
+
+            String accessToken = jwtUtil.generateAccessToken(theCustomer.getCustomer_id(), theCustomer.getEmail(), "CUSTOMER");
+            String newRefreshToken = jwtUtil.generateRefreshToken(theCustomer.getCustomer_id(), theCustomer.getEmail(), "CUSTOMER");
+
+            return new AuthResponse(accessToken, newRefreshToken, "CUSTOMER", theCustomer.getCustomer_id(), theCustomer.getEmail());
+        } else if (Objects.equals(userType, "VENDOR")) {
+            Vendor theVendor = authDao.findVendorByEmail(email);
+            if (theVendor == null) {
+                throw new RuntimeException("Vendor not found");
+            }
+
+            String accessToken = jwtUtil.generateAccessToken(theVendor.getVendor_id(), theVendor.getEmail(), "VENDOR");
+            String newRefreshToken = jwtUtil.generateRefreshToken(theVendor.getVendor_id(), theVendor.getEmail(), "VENDOR");
+
+            return new AuthResponse(accessToken, newRefreshToken, "VENDOR", theVendor.getVendor_id(), theVendor.getEmail());
+        } else {
+            throw new RuntimeException("Invalid user type in token");
         }
-
-        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getEmail(), userType);
-        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getEmail(),userType);
-
-        return new AuthResponse(accessToken, newRefreshToken, user.getUserType(), user.getId(),
-                user.getFirstName(), user.getLastName(), user.getEmail());
-    }
-
-    private User findUserById(Integer userId) {
-        // Try to find in Customer table
-        try {
-            User user = authDao.findUserByEmailAndType("", "CUSTOMER");
-            // This is a simplified approach - you'd need to modify the DAO to support finding by ID
-        } catch (Exception e) {
-            // Continue to next table
-
-        }
-
-        // For simplicity, we'll assume the refresh token is valid and return a basic user
-        // In a real implementation, you'd want to fetch user details by ID
-        User user = new User();
-        user.setId(userId);
-        return user;
     }
 
     private boolean isValidUserType(String userType) {
         return userType != null &&
                 (userType.equalsIgnoreCase("CUSTOMER") ||
-                        userType.equalsIgnoreCase("VENDOR"));
-//                        userType.equalsIgnoreCase("STAFF"));
+                        userType.equalsIgnoreCase("VENDOR") ||
+                        userType.equalsIgnoreCase("STAFF"));
     }
 
-    public User getUserByEmail(String email,String userType) {
-        return authDao.findUserByEmailAndType(email,userType);
+    public User getUserByEmail(String email, String userType) {
+        return authDao.findUserByEmailAndType(email, userType);
     }
-//    public Staff getCustomerByEmail(String email,String userType) {
-//        return authDao.findCustomerByEmail(email,userType);
-//    }
-//    public Staff getVendorByEmail(String email, String userType) {
-//        return authDao.findVendorByEmail(email,userType);
-//    }
 }

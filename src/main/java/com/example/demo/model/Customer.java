@@ -3,7 +3,7 @@ package com.example.demo.model;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class Customer {
+public class Customer extends User {
 
     private Integer customer_id;
     private String first_name;
@@ -18,13 +18,19 @@ public class Customer {
     private String emergency_contact_no;
     private LocalDateTime created_at;
 
+    public Customer() {
+        super();
+    }
+
     public Customer(String password) {
+        super();
         this.password = password;
     }
 
     public Customer(Integer customer_id, String first_name, String last_name, String phone, String email, String password,
                     LocalDate date_of_birth, String gender, String emergency_contact_first_name,
                     String emergency_contact_last_name, String emergency_contact_no, LocalDateTime created_at) {
+        super(email, phone, password, "CUSTOMER");
         this.customer_id = customer_id;
         this.first_name = first_name;
         this.last_name = last_name;
@@ -39,6 +45,7 @@ public class Customer {
         this.created_at = created_at;
     }
 
+    // Getters and Setters
     public Integer getCustomer_id() {
         return customer_id;
     }
@@ -49,14 +56,6 @@ public class Customer {
 
     public String getFirst_name() {
         return first_name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public void setFirst_name(String first_name) {
@@ -71,20 +70,37 @@ public class Customer {
         this.last_name = last_name;
     }
 
+    @Override
     public String getPhone() {
         return phone;
     }
 
+    @Override
     public void setPhone(String phone) {
         this.phone = phone;
+        super.setPhone(phone);
     }
 
+    @Override
     public String getEmail() {
         return email;
     }
 
+    @Override
     public void setEmail(String email) {
         this.email = email;
+        super.setEmail(email);
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public void setPassword(String password) {
+        this.password = password;
+        super.setPassword(password);
     }
 
     public LocalDate getDate_of_birth() {
@@ -143,12 +159,14 @@ public class Customer {
                 ", last_name='" + last_name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
                 ", date_of_birth=" + date_of_birth +
                 ", gender='" + gender + '\'' +
                 ", emergency_contact_first_name='" + emergency_contact_first_name + '\'' +
                 ", emergency_contact_last_name='" + emergency_contact_last_name + '\'' +
                 ", emergency_contact_no='" + emergency_contact_no + '\'' +
                 ", created_at=" + created_at +
+                ", userType='" + getUserType() + '\'' +
                 '}';
     }
 }

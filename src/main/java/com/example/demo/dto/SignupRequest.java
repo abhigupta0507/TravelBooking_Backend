@@ -14,9 +14,128 @@ public class SignupRequest {
     private String emergencyContactFirstName;
     private String emergencyContactLastName;
     private String emergencyContactNo;
+
+    @Override
+    public String toString() {
+        return "SignupRequest{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", password='" + password + '\'' +
+                ", userType='" + userType + '\'' +
+                ", role='" + role + '\'' +
+                ", dateOfBirth='" + dateOfBirth + '\'' +
+                ", gender='" + gender + '\'' +
+                ", emergencyContactFirstName='" + emergencyContactFirstName + '\'' +
+                ", emergencyContactLastName='" + emergencyContactLastName + '\'' +
+                ", emergencyContactNo='" + emergencyContactNo + '\'' +
+                ", serviceType='" + serviceType + '\'' +
+                ", contactPersonFirstName='" + contactPersonFirstName + '\'' +
+                ", contactPersonLastName='" + contactPersonLastName + '\'' +
+               // ", service_type='" + service_type + '\'' +
+                ", street_name='" + street_name + '\'' +
+                ", amount_due='" + amount_due + '\'' +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", ifsc_code='" + ifsc_code + '\'' +
+                ", Account_no='" + Account_no + '\'' +
+                ", status='" + status + '\'' +
+                ", vendorName='" + vendorName + '\'' +
+                ", pin='" + pin + '\'' +
+                '}';
+    }
+
     private String serviceType; // For vendor
     private String contactPersonFirstName; // For vendor
+
     private String contactPersonLastName; // For vendor
+    private String street_name;
+    private String amount_due;
+    private String vendorName;
+
+    public String getAccount_no() {
+        return Account_no;
+    }
+
+    public void setAccount_no(String account_no) {
+        Account_no = account_no;
+    }
+
+    private String city;
+    private String state;
+    private String ifsc_code;
+    private String Account_no;
+
+    public String getVendorName() {
+        return vendorName;
+    }
+
+    public void setVendorName(String vendorName) {
+        this.vendorName = vendorName;
+    }
+
+   // private String amount_due;
+    private String status;
+
+
+    public String getStreet_name() {
+        return street_name;
+    }
+
+    public void setStreet_name(String street_name) {
+        this.street_name = street_name;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getIfsc_code() {
+        return ifsc_code;
+    }
+
+    public void setIfsc_code(String ifsc_code) {
+        this.ifsc_code = ifsc_code;
+    }
+
+    public String getAmount_due() {
+        return amount_due;
+    }
+
+    public void setAmount_due(String amount_due) {
+        this.amount_due = amount_due;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPin() {
+        return pin;
+    }
+
+    public void setPin(String pin) {
+        this.pin = pin;
+    }
+
+    private String pin;
 
     // Getters and Setters
     public String getFirstName() { return firstName; }
