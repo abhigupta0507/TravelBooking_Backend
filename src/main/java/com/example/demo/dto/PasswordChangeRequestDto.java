@@ -53,4 +53,13 @@ public class PasswordChangeRequestDto {
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
     }
+
+    @Override
+    public String toString() {
+        return "PasswordChangeRequestDto{" +
+                "currentPassword='" + currentPassword + '\'' +
+                ", newPassword='" + newPassword + '\'' +
+                ", confirmPassword='" + confirmPassword + '\'' +
+                '}';
+    }
 }

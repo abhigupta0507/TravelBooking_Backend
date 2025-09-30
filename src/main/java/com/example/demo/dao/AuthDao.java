@@ -238,19 +238,19 @@ public class AuthDao {
     }
 
     //    password update
-    public void updateCustomerPassword(Integer customerId, String newHashedPassword) {
+    public int updateCustomerPassword(Integer customerId, String newHashedPassword) {
         String sql = "UPDATE Customer SET password = ? WHERE customer_id = ?";
-        jdbcTemplate.update(sql, newHashedPassword, customerId);
+        return jdbcTemplate.update(sql, newHashedPassword, customerId);
     }
 
-    public void updateVendorPassword(Integer vendorId, String newHashedPassword) {
+    public int updateVendorPassword(Integer vendorId, String newHashedPassword) {
         String sql = "UPDATE Vendor SET password = ? WHERE vendor_id = ?";
-        jdbcTemplate.update(sql, newHashedPassword, vendorId);
+        return jdbcTemplate.update(sql, newHashedPassword, vendorId);
     }
 
-    public void updateStaffPassword(Integer staffId, String newHashedPassword) {
+    public int updateStaffPassword(Integer staffId, String newHashedPassword) {
         String sql = "UPDATE Staff SET password = ? WHERE staff_id = ?";
-        jdbcTemplate.update(sql, newHashedPassword, staffId);
+        return jdbcTemplate.update(sql, newHashedPassword, staffId);
     }
 
     private static class CustomerRowMapper implements RowMapper<Customer> {

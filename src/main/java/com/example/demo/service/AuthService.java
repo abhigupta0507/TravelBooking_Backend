@@ -294,16 +294,19 @@ public class AuthService {
 
         // Step 5: Update the password in the database for the correct user
         // Note: You will need to create these update methods in your AuthDao
-        switch (userTypeUpper) {
-            case "CUSTOMER":
-                authDao.updateCustomerPassword(userId, newHashedPassword);
-                break;
-            case "VENDOR":
-                authDao.updateVendorPassword(userId, newHashedPassword);
-                break;
-            case "STAFF":
-                authDao.updateStaffPassword(userId, newHashedPassword);
-                break;
+        try {
+            int success = switch (userTypeUpper) {
+                case "CUSTOMER" -> authDao.updateCustomerPassword(userId, newHashedPassword);
+                case "VENDOR" -> authDao.updateVendorPassword(userId, newHashedPassword);
+                case "STAFF" -> authDao.updateStaffPassword(userId, newHashedPassword);
+                default -> throw new RuntimeException("Given UserType is not one of viable choices!");
+            };
+            if(success==0){
+                throw new RuntimeException("Database update failed!");
+            }
+        }
+        catch(RuntimeException e){
+            throw new RuntimeException("Database update failed!");
         }
     }
 }
