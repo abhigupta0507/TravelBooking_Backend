@@ -205,6 +205,38 @@ public class AuthDao {
         return keyHolder.getKey().intValue();
     }
 
+    public void updateCustomer(int profileId, SignupRequest profile) {
+        String sql = "UPDATE Customers SET first_name=?, last_name=?, phone=?, emergency_contact_first_name=?,emergency_contact_last_name=?,emergency_contact_no=? WHERE customer_id=?";
+        jdbcTemplate.update(sql, profile.getFirstName(), profile.getLastName(), profile.getPhone(), profile.getEmergencyContactFirstName(), profile.getEmergencyContactLastName(), profile.getEmergencyContactNo(), profileId);
+    }
+
+    public void updateVendor(int profileId, SignupRequest profile) {
+        System.out.println(profile);
+        String sql="UPDATE Vendor SET vendor_name=?, contact_person_first_name=?,contact_person_last_name=?,phone=?,street_name=?,city=?,state=?,pin=?,status=? WHERE vendor_id=?";
+        jdbcTemplate.update(sql, profile.getVendorName(), profile.getContactPersonFirstName(), profile.getContactPersonLastName(), profile.getPhone(), profile.getStreet_name(), profile.getCity(), profile.getState(), profile.getPin(), profile.getStatus(), profileId);
+    }
+
+    public void updateStaff(int profileId, SignupRequest profile) {
+        String sql="UPDATE Staff SET first_name=?,last_name=?,phone=? WHERE staff_id=profileId";
+        jdbcTemplate.update(sql, profile.getFirstName(), profile.getLastName(), profile.getPhone(), profileId);
+    }
+
+
+    public User findCustomerById(int profileId) {
+        String sql= "SELECT * FROM Customer WHERE customer_id=?";
+        return jdbcTemplate.queryForObject(sql,new CustomerRowMapper(),profileId);
+    }
+
+    public User findVendorById(int profileId) {
+        String sql= "SELECT * FROM Vendor WHERE vendor_id=?";
+        return jdbcTemplate.queryForObject(sql,new VendorRowMapper(),profileId);
+    }
+
+    public User findStaffById(int profileId) {
+        String sql= "SELECT * FROM Staff WHERE staff_id=?";
+        return jdbcTemplate.queryForObject(sql,new StaffRowMapper(),profileId);
+    }
+
     private static class CustomerRowMapper implements RowMapper<Customer> {
         @Override
         public Customer mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -82,7 +82,7 @@ public class AuthController {
             String userType = jwtUtil.getUserTypeFromToken(token);
             String email = jwtUtil.getEmailFromToken(token);
 
-            Object user = authService.getUserByEmail(email, userType);
+            Object user = authService.getUserByEmailAndType(email, userType);
 
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -96,4 +96,42 @@ public class AuthController {
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
+
+    @PutMapping("/profile/{profileId}")
+    public ResponseEntity<ApiResponse<Object>> updateProfile(@PathVariable int profileId ,@RequestHeader("Authorization") String authHeader, @RequestBody SignupRequest profile){
+//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
+//        }
+
+        //System.out.println(profileId);
+        System.out.println(profile);
+        String token = authHeader.substring(7);
+
+        try {
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            //String email = jwtUtil.getEmailFromToken(token);
+            int user_id = jwtUtil.getUserIdFromToken(token);
+
+            if(user_id!=profileId){
+                throw new RuntimeException("You are not authorized lil bro!");
+            }
+
+            Object user = authService.updateProfile(profileId,userType,profile);
+
+
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>(false, "User not found", null));
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Successfully fetched profile", user));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+
 }

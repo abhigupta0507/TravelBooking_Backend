@@ -202,7 +202,41 @@ public class AuthService {
                         userType.equalsIgnoreCase("STAFF"));
     }
 
-    public User getUserByEmail(String email, String userType) {
+    public User getUserByEmailAndType(String email, String userType) {
         return authDao.findUserByEmailAndType(email, userType);
+    }
+
+    public User getUserByIdAndUserType(int profileId,String userType){
+        if(Objects.equals(userType, "CUSTOMER")){
+            return authDao.findCustomerById(profileId);
+        }
+        else if(Objects.equals(userType, "VENDOR")){
+            return authDao.findVendorById(profileId);
+        }
+        else if(Objects.equals(userType, "STAFF")){
+            return authDao.findStaffById(profileId);
+        }
+        return new User();
+    }
+
+    public Object updateProfile(int profileId, String userType, SignupRequest profile) {
+        // update all fields
+        if(Objects.equals(userType, "CUSTOMER")){
+            authDao.updateCustomer(profileId,profile);
+            return authDao.findCustomerById(profileId);
+        }
+        else if(Objects.equals(userType, "VENDOR")){
+            System.out.println(profile);
+            authDao.updateVendor(profileId,profile);
+            return authDao.findVendorById(profileId);
+        }
+        else if(Objects.equals(userType, "STAFF")){
+            authDao.updateStaff(profileId,profile);
+            return authDao.findStaffById(profileId);
+        }
+        else{
+            throw new RuntimeException("INVALID USERTYPE");
+        }
+
     }
 }
