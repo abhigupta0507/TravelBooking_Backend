@@ -6,6 +6,8 @@ import com.example.demo.model.Staff;
 import com.example.demo.model.User;
 import com.example.demo.model.Vendor;
 import com.example.demo.service.AuthService;
+import io.jsonwebtoken.JwtException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +72,7 @@ public class AuthController {
     }
 
     @GetMapping("/profile/{profileId}")
-    public ResponseEntity<ApiResponse<Object>> getProfile(@PathVariable int profileId, @RequestHeader("Authorization") String authHeader){
+    public ResponseEntity<ApiResponse<Object>> getProfile(@PathVariable int profileId, @RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
@@ -87,7 +89,7 @@ public class AuthController {
                         .body(new ApiResponse<>(false, "Access Denied: You are not authorized to view this profile", null));
             }
 
-            Object user = authService.getUserByIdAndUserType(profileId,userType);
+            Object user = authService.getUserByIdAndUserType(profileId, userType);
 
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -103,7 +105,7 @@ public class AuthController {
     }
 
     @PutMapping("/profile/{profileId}")
-    public ResponseEntity<ApiResponse<Object>> updateProfile(@PathVariable int profileId ,@RequestHeader("Authorization") String authHeader, @RequestBody SignupRequest profile){
+    public ResponseEntity<ApiResponse<Object>> updateProfile(@PathVariable int profileId, @RequestHeader("Authorization") String authHeader, @RequestBody SignupRequest profile) {
 //        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
 //            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 //                    .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
@@ -116,13 +118,14 @@ public class AuthController {
         try {
             String userType = jwtUtil.getUserTypeFromToken(token);
             //String email = jwtUtil.getEmailFromToken(token);
-            int user_id = jwtUtil.getUserIdFromToken(token);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
 
-            if(user_id!=profileId){
-                throw new RuntimeException("You are not authorized lil bro!");
+            if (!userId.equals(profileId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ApiResponse<>(false, "Access Denied: You are not authorized to view this profile", null));
             }
 
-            Object user = authService.updateProfile(profileId,userType,profile);
+            Object user = authService.updateProfile(profileId, userType, profile);
 
 
             if (user == null) {
@@ -138,5 +141,41 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/change-password/{profileId}")
+    public ResponseEntity<ApiResponse<Object>> changePassword(
+            @PathVariable int profileId,
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody PasswordChangeRequestDto passChange) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
+        }
 
+        try {
+            // Step 1: Parse the token
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
+
+            // Step 2: Check if the user is authorized to perform this action
+            if (!userId.equals(profileId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ApiResponse<>(false, "Access Denied: You are not authorized to change the password for this profile", null));
+            }
+
+            // Step 3: Call the service to perform the password change
+            authService.changePassword(profileId, userType, passChange);
+
+            // Step 4: Return a successful response
+            return ResponseEntity.ok(new ApiResponse<>(true, "Password changed successfully.", null));
+
+        } catch (RuntimeException e) {
+            // Catches errors thrown from your service layer (e.g., "Incorrect current password")
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
 }

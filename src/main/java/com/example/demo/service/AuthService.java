@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dao.AuthDao;
+import com.example.demo.dto.PasswordChangeRequestDto;
 import com.example.demo.dto.SignupRequest;
 import com.example.demo.dto.AuthResponse;
 import com.example.demo.model.Customer;
@@ -9,6 +10,7 @@ import com.example.demo.model.User;
 import com.example.demo.model.Vendor;
 import com.example.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -237,6 +239,71 @@ public class AuthService {
         else{
             throw new RuntimeException("INVALID USERTYPE");
         }
+    }
 
+
+    public void changePassword(Integer userId, String userType, PasswordChangeRequestDto request) {
+        // Step 1: Validate that the new password and confirmation password match
+        if (!Objects.equals(request.getNewPassword(), request.getConfirmPassword())) {
+            throw new RuntimeException("New password and confirmation password do not match.");
+        }
+
+        String userTypeUpper = userType.toUpperCase();
+        String storedHashedPassword;
+
+        // Step 2: Find the user and get their current stored password
+        try {
+            switch (userTypeUpper) {
+                case "CUSTOMER":
+                    Customer customer = authDao.findCustomerById(userId);
+                    if (customer == null) {
+                        throw new RuntimeException("User not found with the specified email and type.");
+                    }
+                    storedHashedPassword = customer.getPassword();
+                    break;
+                case "VENDOR":
+                    Vendor vendor = authDao.findVendorById(userId);
+                    if (vendor == null) {
+                        throw new RuntimeException("User not found with the specified email and type.");
+                    }
+                    storedHashedPassword = vendor.getPassword();
+                    break;
+                case "STAFF":
+                    // Note: You will need to create findStaffByEmail in your AuthDao
+                    Staff staff = authDao.findStaffById(userId);
+                    if (staff == null) {
+                        throw new RuntimeException("User not found with the specified email and type.");
+                    }
+                    storedHashedPassword = staff.getPassword();
+                    break;
+                default:
+                    throw new RuntimeException("Invalid user type for password change.");
+            }
+        } catch (EmptyResultDataAccessException e) {
+            // This block now correctly handles the "user not found" case
+            throw new RuntimeException("User not found with the specified ID and type.");
+        }
+
+        // Step 3: Verify if the provided 'currentPassword' is correct
+        if (!passwordEncoder.matches(request.getCurrentPassword(), storedHashedPassword)) {
+            throw new RuntimeException("Incorrect current password provided.");
+        }
+
+        // Step 4: Encrypt the new password
+        String newHashedPassword = passwordEncoder.encode(request.getNewPassword());
+
+        // Step 5: Update the password in the database for the correct user
+        // Note: You will need to create these update methods in your AuthDao
+        switch (userTypeUpper) {
+            case "CUSTOMER":
+                authDao.updateCustomerPassword(userId, newHashedPassword);
+                break;
+            case "VENDOR":
+                authDao.updateVendorPassword(userId, newHashedPassword);
+                break;
+            case "STAFF":
+                authDao.updateStaffPassword(userId, newHashedPassword);
+                break;
+        }
     }
 }
