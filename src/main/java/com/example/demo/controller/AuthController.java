@@ -69,8 +69,8 @@ public class AuthController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Logged out successfully", null));
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<Object>> getProfile(@RequestHeader("Authorization") String authHeader){
+    @GetMapping("/profile/{profileId}")
+    public ResponseEntity<ApiResponse<Object>> getProfile(@PathVariable int profileId, @RequestHeader("Authorization") String authHeader){
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
@@ -80,9 +80,14 @@ public class AuthController {
 
         try {
             String userType = jwtUtil.getUserTypeFromToken(token);
-            String email = jwtUtil.getEmailFromToken(token);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
 
-            Object user = authService.getUserByEmailAndType(email, userType);
+            if (!userId.equals(profileId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new ApiResponse<>(false, "Access Denied: You are not authorized to view this profile", null));
+            }
+
+            Object user = authService.getUserByIdAndUserType(profileId,userType);
 
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
