@@ -222,19 +222,35 @@ public class AuthDao {
     }
 
 
-    public User findCustomerById(int profileId) {
+    public Customer findCustomerById(int profileId) {
         String sql= "SELECT * FROM Customer WHERE customer_id=?";
         return jdbcTemplate.queryForObject(sql,new CustomerRowMapper(),profileId);
     }
 
-    public User findVendorById(int profileId) {
+    public Vendor findVendorById(int profileId) {
         String sql= "SELECT * FROM Vendor WHERE vendor_id=?";
         return jdbcTemplate.queryForObject(sql,new VendorRowMapper(),profileId);
     }
 
-    public User findStaffById(int profileId) {
+    public Staff findStaffById(int profileId) {
         String sql= "SELECT * FROM Staff WHERE staff_id=?";
         return jdbcTemplate.queryForObject(sql,new StaffRowMapper(),profileId);
+    }
+
+    //    password update
+    public void updateCustomerPassword(Integer customerId, String newHashedPassword) {
+        String sql = "UPDATE Customer SET password = ? WHERE customer_id = ?";
+        jdbcTemplate.update(sql, newHashedPassword, customerId);
+    }
+
+    public void updateVendorPassword(Integer vendorId, String newHashedPassword) {
+        String sql = "UPDATE Vendor SET password = ? WHERE vendor_id = ?";
+        jdbcTemplate.update(sql, newHashedPassword, vendorId);
+    }
+
+    public void updateStaffPassword(Integer staffId, String newHashedPassword) {
+        String sql = "UPDATE Staff SET password = ? WHERE staff_id = ?";
+        jdbcTemplate.update(sql, newHashedPassword, staffId);
     }
 
     private static class CustomerRowMapper implements RowMapper<Customer> {
