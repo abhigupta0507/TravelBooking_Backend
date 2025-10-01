@@ -16,14 +16,27 @@ public class Staff extends User {
     private String role;
     private BigDecimal salary;
 
+    public Staff(String userType, String employee_code, String first_name, String last_name, String email, String phone, String password, String role, BigDecimal salary, Date joining_date) {
+        super(email, phone, password, userType);
+        this.employee_code = employee_code;
+        this.first_name = first_name;
+        this.last_name = last_name;
+//        this.email = email1;
+//        this.phone = phone1;
+        this.joining_date = joining_date;
+    //    this.password = password1;
+        this.role = role;
+        this.salary = salary;
+    }
+
     public Staff() {
         super();
     }
-
-    public Staff(String password) {
-        super();
-        this.password = password;
-    }
+//
+//    public Staff(String password) {
+//        super();
+//        this.password = password;
+//    }
 
     public Staff(Integer staff_id, String employee_code, String first_name, String last_name,
                  String email, String phone, Date joining_date, String password, String role, BigDecimal salary) {
@@ -39,6 +52,7 @@ public class Staff extends User {
         this.role = role;
         this.salary = salary;
     }
+
 
     // Getters and Setters
     @Override

@@ -15,12 +15,13 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -114,25 +115,33 @@ public class AuthDao {
         return keyHolder.getKey().intValue();
     }
 
-    public Integer createStaff(String firstName, String lastName, String email, String password, String phone, String role) {
-        String sql = "INSERT INTO Staff (employee_code, first_name, last_name, email, password, phone, " +
-                "joining_date, role, salary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setString(1, "EMP" + System.currentTimeMillis());
-            ps.setString(2, firstName);
-            ps.setString(3, lastName);
-            ps.setString(4, email);
-            ps.setString(5, password);
-            ps.setString(6, phone);
-            ps.setDate(7, java.sql.Date.valueOf(LocalDate.now()));
-            ps.setString(8, role);
-            ps.setBigDecimal(9, new java.math.BigDecimal("25000.00"));
-            return ps;
-        }, keyHolder);
+    public void createStaff(String employee_code, String firstName, String lastName, String email, String password, String phone, Date joining_date, String role, BigDecimal salary) {
+        try {
 
-        return keyHolder.getKey().intValue();
+
+            String sql = "INSERT INTO Staff (employee_code, first_name, last_name, email, password, phone, " +
+                    "joining_date, role, salary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, employee_code);
+                ps.setString(2, firstName);
+                ps.setString(3, lastName);
+                ps.setString(4, email);
+                ps.setString(5, password);
+                ps.setString(6, phone);
+                ps.setDate(7, (java.sql.Date) joining_date);
+                ps.setString(8, role);
+                ps.setBigDecimal(9, salary);
+                ps.setBigDecimal(9, new java.math.BigDecimal("25000.00"));
+                return ps;
+            }, keyHolder);
+
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+
     }
 
     public boolean checkRequiredFieldsPresent(SignupRequest request) {
@@ -160,11 +169,6 @@ public class AuthDao {
                 "vendor_name, service_type, contact_person_first_name, contact_person_last_name, " +
                 "email, password, phone, street_name, city, state, pin, amt_due, account_no, ifsc_code, status" +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-//        System.out.println("Creating vendor with name: " + vendorName);
-//        System.out.println("Service type: " + serviceType);
-//        System.out.println("Contact person: " + contactPersonFirstName + " " + contactPersonLastName);
-//        System.out.println("Amount due: " + amountDue);
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {

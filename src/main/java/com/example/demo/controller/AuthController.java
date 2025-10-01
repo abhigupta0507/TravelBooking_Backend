@@ -89,7 +89,9 @@ public class AuthController {
                         .body(new ApiResponse<>(false, "Access Denied: You are not authorized to view this profile", null));
             }
 
-            Object user = authService.getUserByIdAndUserType(profileId, userType);
+            User user = authService.getUserByIdAndUserType(profileId, userType);
+            user.setPassword(null);
+            user.setUserType(userType);
 
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

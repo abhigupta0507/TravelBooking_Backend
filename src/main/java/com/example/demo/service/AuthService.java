@@ -97,16 +97,6 @@ public class AuthService {
                         request.getStreet_name()
                 );
                 break;
-            case "STAFF":
-                userId = authDao.createStaff(
-                        request.getFirstName(),
-                        request.getLastName(),
-                        request.getEmail(),
-                        hashedPassword, // Use encrypted password
-                        request.getPhone(),
-                        request.getRole().toUpperCase()
-                );
-                break;
         }
 
         if (userId == null) {
@@ -350,5 +340,14 @@ public class AuthService {
 
     public void deleteStaff(int staffId) {
         authDao.deleteStaffById(staffId);
+    }
+
+    public Staff createStaff(Staff theStaff) {
+
+        String hashedPassword = passwordEncoder.encode(theStaff.getPassword());
+
+        authDao.createStaff(theStaff.getEmployee_code(),theStaff.getFirst_name(),theStaff.getLast_name(),theStaff.getEmail(),
+                hashedPassword,theStaff.getPhone(),theStaff.getJoining_date(),theStaff.getRole(),theStaff.getSalary());
+        return authDao.findStaffByEmail(theStaff.getEmail());
     }
 }
