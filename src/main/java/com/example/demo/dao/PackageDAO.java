@@ -33,6 +33,7 @@ public class PackageDAO {
         thePackage.setPackageId(rs.getInt("package_id"));
         thePackage.setTour_type(rs.getString("tour_type"));
         thePackage.setName(rs.getString("name"));
+        thePackage.setSlug(rs.getString("slug"));
         thePackage.setImage_url(rs.getString("image_url"));
         thePackage.setDuration_days(rs.getInt("duration_days"));
         thePackage.setPrice(rs.getInt("price"));

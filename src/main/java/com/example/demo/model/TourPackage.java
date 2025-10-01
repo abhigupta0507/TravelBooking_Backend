@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class TourPackage {
     private int packageId;
     private String name;
+    private String slug;
     private String tour_type;
     private String itinerary_summary;
     private int duration_days;
@@ -25,8 +26,9 @@ public class TourPackage {
     public TourPackage() {
     }
 
-    public TourPackage(String name, String tour_type, String itinerary_summary, int duration_days,int price, int max_capacity, String image_url, PackageStatus status, Float avg_rating) {
+    public TourPackage(String name, String slug, String tour_type, String itinerary_summary, int duration_days,int price, int max_capacity, String image_url, PackageStatus status, Float avg_rating) {
         this.name = name;
+        this.slug = slug;
         this.tour_type = tour_type;
         this.itinerary_summary = itinerary_summary;
         this.duration_days = duration_days;
@@ -68,6 +70,10 @@ public class TourPackage {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getSlug() { return slug;}
+
+    public void setSlug(String slug) {this.slug = slug;}
 
     public String getTour_type() {
         return tour_type;
@@ -127,17 +133,19 @@ public class TourPackage {
 
     @Override
     public String toString() {
-        return "TourPackage: " +
+        return "TourPackage{" +
                 "packageId=" + packageId +
                 ", name='" + name + '\'' +
+                ", slug='" + slug + '\'' +
                 ", tour_type='" + tour_type + '\'' +
                 ", itinerary_summary='" + itinerary_summary + '\'' +
                 ", duration_days=" + duration_days +
                 ", max_capacity=" + max_capacity +
                 ", image_url='" + image_url + '\'' +
-                ", status='" + status + '\'' +
+                ", status=" + status +
                 ", price=" + price +
                 ", avg_rating=" + avg_rating +
+                ", created_at=" + created_at +
                 '}';
     }
 }
