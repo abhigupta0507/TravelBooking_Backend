@@ -1,11 +1,9 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.PackageStatus;
 import com.example.demo.model.TourPackage;
 import com.example.demo.service.PackageService;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,9 +19,12 @@ public class PackageController {
     }
 
     @GetMapping("/")
-    public List<TourPackage> getAllPackages(){
-        List<TourPackage> thePackages = packageService.findAllPackages();
-        return thePackages;
+    public List<TourPackage> getPackages(@RequestParam(required = false) PackageStatus status) {
+        if (status != null) {
+            return packageService.findPackagesByStatus(status);
+        } else {
+            return packageService.findAllPackages();
+        }
     }
 
 

@@ -1,5 +1,7 @@
 package com.example.demo.model;
 
+import com.example.demo.dto.PackageStatus;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -12,7 +14,7 @@ public class TourPackage {
     private int max_capacity;
 
     private String image_url;
-    private String status;
+    private PackageStatus status;
 
     private int price;
     private Float avg_rating;
@@ -23,7 +25,7 @@ public class TourPackage {
     public TourPackage() {
     }
 
-    public TourPackage(String name, String tour_type, String itinerary_summary, int duration_days,int price, int max_capacity, String image_url, String status, Float avg_rating) {
+    public TourPackage(String name, String tour_type, String itinerary_summary, int duration_days,int price, int max_capacity, String image_url, PackageStatus status, Float avg_rating) {
         this.name = name;
         this.tour_type = tour_type;
         this.itinerary_summary = itinerary_summary;
@@ -107,11 +109,11 @@ public class TourPackage {
         this.image_url = image_url;
     }
 
-    public String getStatus() {
+    public PackageStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(PackageStatus status) {
         this.status = status;
     }
 
