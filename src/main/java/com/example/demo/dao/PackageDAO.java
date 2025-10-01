@@ -2,6 +2,7 @@ package com.example.demo.dao;
 
 import com.example.demo.dto.PackageStatus;
 import com.example.demo.model.TourPackage;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -24,8 +25,18 @@ public class PackageDAO {
 
     public List<TourPackage> findAllPackagesByStatus(PackageStatus status){
         String sql = "SELECT * FROM Tour_Package WHERE status = ?";
-
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToPackage(rs), status.name());
+    }
+
+    public TourPackage findPackageBySlug(String slug){
+        String sql = "SELECT * FROM Tour_Package WHERE slug = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> mapRowToPackage(rs), slug);
+        } catch (EmptyResultDataAccessException e) {
+            // This is not an error. It's expected if no package matches the slug.
+            // Return null to let the service layer know it wasn't found.
+            return null;
+        }
     }
 
     private TourPackage mapRowToPackage(ResultSet rs) throws SQLException {

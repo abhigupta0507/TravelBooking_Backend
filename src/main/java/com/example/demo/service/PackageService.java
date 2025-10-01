@@ -22,4 +22,8 @@ public class PackageService {
     public  List<TourPackage> findPackagesByStatus(PackageStatus status){
         return packageDAO.findAllPackagesByStatus(status);
     }
+
+    public TourPackage findPackageBySlug(String slug){
+        return packageDAO.findPackageBySlug(slug);
+    }
 }
