@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dao.PackageDAO;
-import com.example.demo.dto.PackageOverview;
+import com.example.demo.model.TourPackage;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,8 +14,8 @@ public class PackageService {
 
     private PackageDAO packageDAO;
 
-    public List<PackageOverview> findAllPackages() {
-        List<PackageOverview> thePackages = packageDAO.findAllPackages();
+    public List<TourPackage> findAllPackages() {
+        List<TourPackage> thePackages = packageDAO.findAllPackages();
         return thePackages;
     }
 }

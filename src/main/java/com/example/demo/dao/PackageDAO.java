@@ -1,6 +1,7 @@
 package com.example.demo.dao;
 
 import com.example.demo.dto.PackageOverview;
+import com.example.demo.model.TourPackage;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -16,13 +17,13 @@ public class PackageDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<PackageOverview> findAllPackages(){
+    public List<TourPackage> findAllPackages(){
         String sql = "SELECT * FROM Tour_Package";
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToPackage(rs));
     }
 
-    private PackageOverview mapRowToPackage(ResultSet rs) throws SQLException {
-        PackageOverview thePackage = new PackageOverview();
+    private TourPackage mapRowToPackage(ResultSet rs) throws SQLException {
+        TourPackage thePackage = new TourPackage();
         thePackage.setPackageId(rs.getInt("package_id"));
         thePackage.setTour_type(rs.getString("tour_type"));
         thePackage.setName(rs.getString("name"));
@@ -33,6 +34,8 @@ public class PackageDAO {
         thePackage.setItinerary_summary(rs.getString("itinerary_summary"));
         thePackage.setStatus(rs.getString("status"));
         thePackage.setAvg_rating(rs.getFloat("avg_rating"));
+        thePackage.setCreated_at(rs.getObject("created_at", java.time.LocalDateTime.class));
+
         return thePackage;
     }
 }

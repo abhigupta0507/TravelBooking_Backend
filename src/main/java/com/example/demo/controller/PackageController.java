@@ -1,7 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.PackageOverview;
+import com.example.demo.model.TourPackage;
 import com.example.demo.service.PackageService;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/packages")
+@CrossOrigin("*")
 public class PackageController {
 
     private PackageService packageService;
@@ -19,8 +21,8 @@ public class PackageController {
     }
 
     @GetMapping("/")
-    public List<PackageOverview> getAllPackages(){
-        List<PackageOverview> thePackages = packageService.findAllPackages();
+    public List<TourPackage> getAllPackages(){
+        List<TourPackage> thePackages = packageService.findAllPackages();
         return thePackages;
     }
 }
