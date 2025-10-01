@@ -1,6 +1,8 @@
 package com.example.demo.dao;
 
 import com.example.demo.dto.SignupRequest;
+import com.example.demo.dto.StaffDTO;
+import com.example.demo.dto.VendorDTO;
 import com.example.demo.model.Customer;
 import com.example.demo.model.Staff;
 import com.example.demo.model.User;
@@ -19,6 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public class AuthDao {
@@ -251,6 +254,50 @@ public class AuthDao {
     public int updateStaffPassword(Integer staffId, String newHashedPassword) {
         String sql = "UPDATE Staff SET password = ? WHERE staff_id = ?";
         return jdbcTemplate.update(sql, newHashedPassword, staffId);
+    }
+
+    public String getStaffRole(int userId) {
+        String sql= "SELECT role FROM Staff where staff_id=?";
+        return jdbcTemplate.queryForObject(sql,new Object[]{userId},String.class);
+    }
+
+    public List<VendorDTO> getAllVendors() {
+        String sql="SELECT vendor_id,vendor_name, service_type, contact_person_first_name, contact_person_last_name "
+                +",email, phone, street_name, city, state, pin, amt_due, account_no, ifsc_code, status "  +
+                "FROM Vendor";
+        return jdbcTemplate.query(sql,(rs,rowNum)->new VendorDTO(
+                rs.getInt("vendor_id"),
+                rs.getString("vendor_name"),
+                rs.getString("service_type"),
+                rs.getString("contact_person_first_name"),
+                rs.getString("contact_person_last_name"),
+                rs.getString("email"),
+                rs.getString("phone"),
+                rs.getString("street_name"),
+                rs.getString("city"),
+                rs.getString("state"),
+                rs.getString("pin"),
+                rs.getBigDecimal("amt_due"),
+                rs.getString("account_no"),
+                rs.getString("ifsc_code"),
+                rs.getString("status")
+        ));
+    }
+
+    public List<StaffDTO> getAllStaff(){
+        String sql="SELECT staff_id,employee_code, first_name, last_name, email, phone," +
+                "joining_date, role, salary FROM Staff";
+        return jdbcTemplate.query(sql,(rs,rowNum)-> new StaffDTO(
+                rs.getInt("staff_id"),
+                rs.getString("employee_code"),
+                rs.getString("first_name"),
+                rs.getString("last_name"),
+                rs.getString("email"),
+                rs.getString("phone"),
+                rs.getDate("joining_date"),
+                rs.getString("role"),
+                rs.getBigDecimal("salary")
+        ));
     }
 
     private static class CustomerRowMapper implements RowMapper<Customer> {

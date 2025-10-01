@@ -112,7 +112,7 @@ public class AuthController {
 //        }
 
         //System.out.println(profileId);
-        System.out.println(profile);
+        //System.out.println(profile);
         String token = authHeader.substring(7);
 
         try {

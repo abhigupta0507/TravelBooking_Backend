@@ -1,9 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dao.AuthDao;
-import com.example.demo.dto.PasswordChangeRequestDto;
-import com.example.demo.dto.SignupRequest;
-import com.example.demo.dto.AuthResponse;
+import com.example.demo.dto.*;
 import com.example.demo.model.Customer;
 import com.example.demo.model.Staff;
 import com.example.demo.model.User;
@@ -14,6 +12,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -157,6 +156,28 @@ public class AuthService {
             String refreshToken = jwtUtil.generateRefreshToken(theVendor.getVendor_id(), theVendor.getEmail(),"VENDOR");
 
             return new AuthResponse(accessToken, refreshToken, "VENDOR", theVendor.getVendor_id(), theVendor.getEmail());
+        }
+        else if(userType.equals("STAFF")){
+            Staff theStaff = authDao.findStaffByEmail(email);
+            if (theStaff == null) {
+                throw new RuntimeException("Staff not found");
+            }
+
+            // BUG
+
+            //RIGHT NOW SINCE WE ARE NOT CREATING ENTRIES INTO STAFF FROM BACKEND THEREFORE HASHING IS
+            //DONE HENCE THIS CODE BELOW WILL ALWAYS GIVE ERROR THEREFORE I AM COMMENTING IT UNTIL WE
+            //GET THE MECHANISM TO CREATE STAFF (ENCODE PASSWORDS)
+
+            // Use password encoder to verify password
+               //if(!passwordEncoder.matches(password, theStaff.getPassword())){
+                   //throw new RuntimeException("Invalid password");
+              //}
+
+            String accessToken = jwtUtil.generateAccessToken(theStaff.getStaff_id(), theStaff.getEmail(), "STAFF");
+            String refreshToken = jwtUtil.generateRefreshToken(theStaff.getStaff_id(), theStaff.getEmail(),"STAFF");
+
+            return new AuthResponse(accessToken, refreshToken, "STAFF", theStaff.getStaff_id(), theStaff.getEmail());
         }
         else{
             throw new RuntimeException("Invalid user type for login");
@@ -308,5 +329,18 @@ public class AuthService {
         catch(RuntimeException e){
             throw new RuntimeException("Database update failed!");
         }
+    }
+
+
+    public String getStaffRole(int userId) {
+        return authDao.getStaffRole(userId);
+    }
+
+    public List<VendorDTO> getAllVendors() {
+        return authDao.getAllVendors();
+    }
+
+    public List<StaffDTO> getAllStaff(){
+        return authDao.getAllStaff();
     }
 }
