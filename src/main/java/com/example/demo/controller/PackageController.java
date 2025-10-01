@@ -25,4 +25,6 @@ public class PackageController {
         List<TourPackage> thePackages = packageService.findAllPackages();
         return thePackages;
     }
+
+
 }

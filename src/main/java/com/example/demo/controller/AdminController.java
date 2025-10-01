@@ -81,5 +81,58 @@ public class AdminController {
         return ResponseEntity.ok(new ApiResponse<>(true,"Fetched all vendors successfully",StaffList));
     }
 
+    @DeleteMapping("/vendors/{vendorId}")
+    public void deleteVendor(@PathVariable int vendorId, @RequestHeader("Authorization") String authHeader){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new Error("No token found");
+        }
+
+        String token = authHeader.substring(7);
+        String userType = jwtUtil.getUserTypeFromToken(token);
+        int user_id  = jwtUtil.getUserIdFromToken(token);
+
+        if(!Objects.equals(userType, "STAFF")){
+            throw new Error("Only staff(Admin) can access this route");
+        }
+
+        String role = authService.getStaffRole(user_id);
+        if(!Objects.equals(role, "admin")) {
+            throw new Error("Only admin can access this route");
+        }
+
+        authService.deleteVendor(vendorId);
+        return;
+    }
+
+    @DeleteMapping("/staff/{staffId}")
+    public void deleteStaff(@PathVariable int staffId, @RequestHeader("Authorization") String authHeader){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new Error("No token found");
+        }
+
+        String token = authHeader.substring(7);
+        String userType = jwtUtil.getUserTypeFromToken(token);
+        int user_id  = jwtUtil.getUserIdFromToken(token);
+
+        if(!Objects.equals(userType, "STAFF")){
+            throw new Error("Only staff(Admin) can access this route");
+        }
+
+        String role = authService.getStaffRole(user_id);
+        if(!Objects.equals(role, "admin")) {
+            throw new Error("Only admin can access this route");
+        }
+
+        String roleOfTargetPerson = authService.getStaffRole(staffId);
+        if(Objects.equals(roleOfTargetPerson, "admin")){
+            throw new RuntimeException("Can't remove a admin");
+        }
+
+        authService.deleteStaff(staffId);
+        return;
+    }
+
+
+
 
 }

@@ -343,4 +343,12 @@ public class AuthService {
     public List<StaffDTO> getAllStaff(){
         return authDao.getAllStaff();
     }
+
+    public void deleteVendor(int vendorId) {
+        authDao.deleteVendorById(vendorId);
+    }
+
+    public void deleteStaff(int staffId) {
+        authDao.deleteStaffById(staffId);
+    }
 }

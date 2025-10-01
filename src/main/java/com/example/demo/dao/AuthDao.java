@@ -300,6 +300,16 @@ public class AuthDao {
         ));
     }
 
+    public void deleteVendorById(int vendorId) {
+        String sql="DELETE FROM Vendor WHERE vendor_id=?";
+        jdbcTemplate.update(sql,vendorId);
+    }
+
+    public void deleteStaffById(int staffId) {
+        String sql="DELETE FROM Staff WHERE staff_id=?";
+        jdbcTemplate.update(sql,staffId);
+    }
+
     private static class CustomerRowMapper implements RowMapper<Customer> {
         @Override
         public Customer mapRow(ResultSet rs, int rowNum) throws SQLException {
