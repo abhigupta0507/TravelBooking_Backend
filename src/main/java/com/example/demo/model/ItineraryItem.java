@@ -8,9 +8,9 @@ public class ItineraryItem {
     private Integer package_id;
     private Integer item_id;
     private Integer day_number;
-    private String duration;
-    private LocalTime start_time;
-    private LocalTime end_time;
+    private Integer duration;
+    private LocalDateTime start_time;
+    private LocalDateTime end_time;
     private String title;
     private String description;
     private String street_name;
@@ -21,8 +21,8 @@ public class ItineraryItem {
 
     public ItineraryItem() {}
 
-    public ItineraryItem(Integer package_id, Integer item_id, Integer day_number, String duration,
-                          LocalTime start_time, LocalTime end_time, String title, String description,
+    public ItineraryItem(Integer package_id, Integer item_id, Integer day_number, Integer duration,
+                         LocalDateTime start_time, LocalDateTime end_time, String title, String description,
                           String street_name, String city, String state, String pin, LocalDateTime created_at) {
         this.package_id = package_id;
         this.item_id = item_id;
@@ -48,14 +48,14 @@ public class ItineraryItem {
     public Integer getDay_number() { return day_number; }
     public void setDay_number(Integer day_number) { this.day_number = day_number; }
 
-    public String getDuration() { return duration; }
-    public void setDuration(String duration) { this.duration = duration; }
+    public Integer getDuration() { return duration; }
+    public void setDuration(Integer duration) { this.duration = duration; }
 
-    public LocalTime getStart_time() { return start_time; }
-    public void setStart_time(LocalTime start_time) { this.start_time = start_time; }
+    public LocalDateTime getStart_time() { return start_time; }
+    public void setStart_time(LocalDateTime start_time) { this.start_time = start_time; }
 
-    public LocalTime getEnd_time() { return end_time; }
-    public void setEnd_time(LocalTime end_time) { this.end_time = end_time; }
+    public LocalDateTime getEnd_time() { return end_time; }
+    public void setEnd_time(LocalDateTime end_time) { this.end_time = end_time; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
