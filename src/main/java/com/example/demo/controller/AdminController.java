@@ -35,24 +35,29 @@ public class AdminController {
                     .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
         }
 
-        String token = authHeader.substring(7);
-        String userType = jwtUtil.getUserTypeFromToken(token);
-        int user_id  = jwtUtil.getUserIdFromToken(token);
+        try {
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            int user_id = jwtUtil.getUserIdFromToken(token);
 
-        if(!Objects.equals(userType, "STAFF")){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Not a staff member",null));
+            if (!Objects.equals(userType, "STAFF")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Not a staff member", null));
+            }
+
+            String role = authService.getStaffRole(user_id);
+            if (!Objects.equals(role, "admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Not a admin", null));
+            }
+
+            //perform the task as from here only admin can proceed
+            List<VendorDTO> vendorsList;
+            vendorsList = authService.getAllVendors();
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Fetched all vendors successfully", vendorsList));
         }
-
-        String role = authService.getStaffRole(user_id);
-        if(!Objects.equals(role, "admin")){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Not a admin",null));
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
         }
-
-        //perform the task as from here only admin can proceed
-        List<VendorDTO> vendorsList;
-        vendorsList=authService.getAllVendors();
-
-        return ResponseEntity.ok(new ApiResponse<>(true,"Fetched all vendors successfully",vendorsList));
     }
 
     //Get a list of all vendors in DB.
@@ -63,76 +68,81 @@ public class AdminController {
                     .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
         }
 
-        String token = authHeader.substring(7);
-        String userType = jwtUtil.getUserTypeFromToken(token);
-        int user_id  = jwtUtil.getUserIdFromToken(token);
+        try {
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            int user_id = jwtUtil.getUserIdFromToken(token);
 
-        if(!Objects.equals(userType, "STAFF")){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Not a staff member",null));
+            if (!Objects.equals(userType, "STAFF")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Not a staff member", null));
+            }
+
+            String role = authService.getStaffRole(user_id);
+            if (!Objects.equals(role, "admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Not a admin", null));
+            }
+
+            //perform the task as from here only admin can proceed
+            List<StaffDTO> StaffList;
+            StaffList = authService.getAllStaff();
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Fetched all vendors successfully", StaffList));
         }
-
-        String role = authService.getStaffRole(user_id);
-        if(!Objects.equals(role, "admin")){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Not a admin",null));
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
         }
-
-        //perform the task as from here only admin can proceed
-        List<StaffDTO> StaffList;
-        StaffList=authService.getAllStaff();
-
-        return ResponseEntity.ok(new ApiResponse<>(true,"Fetched all vendors successfully",StaffList));
     }
 
-    @DeleteMapping("/vendors/{vendorId}")
-    public void deleteVendor(@PathVariable int vendorId, @RequestHeader("Authorization") String authHeader){
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("No token found");
-        }
+//    @DeleteMapping("/vendors/{vendorId}")
+//    public void deleteVendor(@PathVariable int vendorId, @RequestHeader("Authorization") String authHeader){
+//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//            throw new RuntimeException("No token found");
+//        }
+//
+//        String token = authHeader.substring(7);
+//        String userType = jwtUtil.getUserTypeFromToken(token);
+//        int user_id  = jwtUtil.getUserIdFromToken(token);
+//
+//        if(!Objects.equals(userType, "STAFF")){
+//            throw new RuntimeException("Only staff(Admin) can access this route");
+//        }
+//
+//        String role = authService.getStaffRole(user_id);
+//        if(!Objects.equals(role, "admin")) {
+//            throw new RuntimeException("Only admin can access this route");
+//        }
+//
+//        authService.deleteVendor(vendorId);
+//        return;
+//    }
 
-        String token = authHeader.substring(7);
-        String userType = jwtUtil.getUserTypeFromToken(token);
-        int user_id  = jwtUtil.getUserIdFromToken(token);
-
-        if(!Objects.equals(userType, "STAFF")){
-            throw new RuntimeException("Only staff(Admin) can access this route");
-        }
-
-        String role = authService.getStaffRole(user_id);
-        if(!Objects.equals(role, "admin")) {
-            throw new RuntimeException("Only admin can access this route");
-        }
-
-        authService.deleteVendor(vendorId);
-        return;
-    }
-
-    @DeleteMapping("/staff/{staffId}")
-    public void deleteStaff(@PathVariable int staffId, @RequestHeader("Authorization") String authHeader){
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("No token found");
-        }
-
-        String token = authHeader.substring(7);
-        String userType = jwtUtil.getUserTypeFromToken(token);
-        int user_id  = jwtUtil.getUserIdFromToken(token);
-
-        if(!Objects.equals(userType, "STAFF")){
-            throw new RuntimeException("Only staff(Admin) can access this route");
-        }
-
-        String role = authService.getStaffRole(user_id);
-        if(!Objects.equals(role, "admin")) {
-            throw new RuntimeException("Only admin can access this route");
-        }
-
-        String roleOfTargetPerson = authService.getStaffRole(staffId);
-        if(Objects.equals(roleOfTargetPerson, "admin")){
-            throw new RuntimeException("Can't remove a admin");
-        }
-
-        authService.deleteStaff(staffId);
-        return;
-    }
+//    @DeleteMapping("/staff/{staffId}")
+//    public void deleteStaff(@PathVariable int staffId, @RequestHeader("Authorization") String authHeader){
+//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+//            throw new RuntimeException("No token found");
+//        }
+//
+//        String token = authHeader.substring(7);
+//        String userType = jwtUtil.getUserTypeFromToken(token);
+//        int user_id  = jwtUtil.getUserIdFromToken(token);
+//
+//        if(!Objects.equals(userType, "STAFF")){
+//            throw new RuntimeException("Only staff(Admin) can access this route");
+//        }
+//
+//        String role = authService.getStaffRole(user_id);
+//        if(!Objects.equals(role, "admin")) {
+//            throw new RuntimeException("Only admin can access this route");
+//        }
+//
+//        String roleOfTargetPerson = authService.getStaffRole(staffId);
+//        if(Objects.equals(roleOfTargetPerson, "admin")){
+//            throw new RuntimeException("Can't remove a admin");
+//        }
+//
+//        authService.deleteStaff(staffId);
+//        return;
+//    }
 
 
     @PostMapping("/staff")
@@ -141,27 +151,28 @@ public class AdminController {
             throw new RuntimeException("No token found");
         }
 
-        String token = authHeader.substring(7);
-        String userType = jwtUtil.getUserTypeFromToken(token);
-        int user_id  = jwtUtil.getUserIdFromToken(token);
+        try {
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            int user_id = jwtUtil.getUserIdFromToken(token);
 
-        if(!Objects.equals(userType, "STAFF")){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false,"Be a staff bro!",null));
-        }
+            if (!Objects.equals(userType, "STAFF")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a staff bro!", null));
+            }
 
-        String role = authService.getStaffRole(user_id);
-        if(!Objects.equals(role, "admin")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false,"Be a admin bro!",null));
-        }
+            String role = authService.getStaffRole(user_id);
+            if (!Objects.equals(role, "admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a admin bro!", null));
+            }
 
-        try{
-            Staff dbStaff=authService.createStaff(theStaff);
+
+            Staff dbStaff = authService.createStaff(theStaff);
             dbStaff.setPassword(null);
             dbStaff.setUserType("STAFF");
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true,"Created successfully",dbStaff));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "Created successfully", dbStaff));
         }
-        catch(Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,e.getMessage(),null));
+        catch (Exception e){
+           return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
         }
     }
 
@@ -171,22 +182,65 @@ public class AdminController {
             throw new RuntimeException("No token found");
         }
 
-        String token = authHeader.substring(7);
-        String userType = jwtUtil.getUserTypeFromToken(token);
-        int user_id  = jwtUtil.getUserIdFromToken(token);
+        try {
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            int user_id = jwtUtil.getUserIdFromToken(token);
 
-        if(!Objects.equals(userType, "STAFF")){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false,"Be a staff bro!",null));
+            if (!Objects.equals(userType, "STAFF")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a staff bro!", null));
+            }
+
+            String role = authService.getStaffRole(user_id);
+            if (!Objects.equals(role, "admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a admin bro!", null));
+            }
+
+            User theStaff = authService.getUserByIdAndUserType(staffId, "STAFF");
+            theStaff.setUserType("STAFF");
+            theStaff.setPassword(null);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse<>(true, "here you go!", theStaff));
         }
-
-        String role = authService.getStaffRole(user_id);
-        if(!Objects.equals(role, "admin")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false,"Be a admin bro!",null));
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
         }
-
-        User theStaff = authService.getUserByIdAndUserType(staffId,"STAFF");
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse<>(true,"here you go!",theStaff));
     }
+
+    @PutMapping("/staff/{staffId}")
+    public ResponseEntity<? extends ApiResponse<?>> updateStaff(@RequestHeader("Authorization") String authHeader,@PathVariable int staffId,@RequestBody StaffDTO theStaff){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("No token found");
+        }
+
+        try {
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            int user_id = jwtUtil.getUserIdFromToken(token);
+
+            if (!Objects.equals(userType, "STAFF")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a staff bro!", null));
+            }
+
+
+            String role = authService.getStaffRole(user_id);
+            if (!Objects.equals(role, "admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a admin bro!", null));
+            }
+
+
+            authService.updateStaff(staffId, theStaff);
+            Staff dbStaff = authService.getStaffById(staffId);
+            dbStaff.setPassword(null);
+            dbStaff.setUserType("STAFF");
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse<>(true, "Updated successfully", dbStaff));
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
+        }
+
+    }
+
+
 
 
 

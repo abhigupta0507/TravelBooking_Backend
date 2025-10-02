@@ -85,6 +85,21 @@ public class AuthDao {
         return jdbcTemplate.queryForObject(sql, new StaffRowMapper(), email);
     }
 
+    public Customer findCustomerById(int profileId) {
+        String sql= "SELECT * FROM Customer WHERE customer_id=?";
+        return jdbcTemplate.queryForObject(sql,new CustomerRowMapper(),profileId);
+    }
+
+    public Vendor findVendorById(int profileId) {
+        String sql= "SELECT * FROM Vendor WHERE vendor_id=?";
+        return jdbcTemplate.queryForObject(sql,new VendorRowMapper(),profileId);
+    }
+
+    public Staff findStaffById(int profileId) {
+        String sql= "SELECT * FROM Staff WHERE staff_id=?";
+        return jdbcTemplate.queryForObject(sql,new StaffRowMapper(),profileId);
+    }
+
     public Integer createCustomer(String firstName, String lastName, String email, String password, String phone,
                                   String dateOfBirth, String gender, String emergencyContactFirstName,
                                   String emergencyContactLastName, String emergencyContactNo, String notImp) {
@@ -99,11 +114,7 @@ public class AuthDao {
             ps.setString(3, phone);
             ps.setString(4, email);
             ps.setString(5, password);
-            if (dateOfBirth != null && !dateOfBirth.isEmpty()) {
-                ps.setDate(6, java.sql.Date.valueOf(dateOfBirth));
-            } else {
-                ps.setNull(6, java.sql.Types.DATE);
-            }
+            ps.setDate(6, java.sql.Date.valueOf(dateOfBirth));
             ps.setString(7, gender);
             ps.setString(8, emergencyContactFirstName);
             ps.setString(9, emergencyContactLastName);
@@ -117,8 +128,6 @@ public class AuthDao {
 
     public void createStaff(String employee_code, String firstName, String lastName, String email, String password, String phone, Date joining_date, String role, BigDecimal salary) {
         try {
-
-
             String sql = "INSERT INTO Staff (employee_code, first_name, last_name, email, password, phone, " +
                     "joining_date, role, salary) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -133,7 +142,6 @@ public class AuthDao {
                 ps.setDate(7, (java.sql.Date) joining_date);
                 ps.setString(8, role);
                 ps.setBigDecimal(9, salary);
-                ps.setBigDecimal(9, new java.math.BigDecimal("25000.00"));
                 return ps;
             }, keyHolder);
 
@@ -144,27 +152,10 @@ public class AuthDao {
 
     }
 
-    public boolean checkRequiredFieldsPresent(SignupRequest request) {
-        return (request.getEmail() != null) && (request.getFirstName() != null) &&
-                (request.getPhone() != null);
-    }
-
-    public Integer createVendor(
-            String vendorName,
-            String serviceType,
-            String contactPersonFirstName,
-            String contactPersonLastName,
-            String email,
-            String password,
-            String phone,
-            String city,
-            String amountDue,
-            String accountNo,
-            String ifscCode,
-            String pin,
-            String state,
-            String streetName) {
-
+    public Integer createVendor(String vendorName, String serviceType, String contactPersonFirstName,
+                                String contactPersonLastName, String email, String password, String phone,
+                                String city, String amountDue, String accountNo, String ifscCode, String pin,
+                                String state, String streetName) {
         String sql = "INSERT INTO Vendor (" +
                 "vendor_name, service_type, contact_person_first_name, contact_person_last_name, " +
                 "email, password, phone, street_name, city, state, pin, amt_due, account_no, ifsc_code, status" +
@@ -180,7 +171,6 @@ public class AuthDao {
                 finalVendorName = contactPersonFirstName + " " + contactPersonLastName + " Services";
             }
             ps.setString(1, finalVendorName);
-
             ps.setString(2, serviceType != null ? serviceType : "General");
             ps.setString(3, contactPersonFirstName != null ? contactPersonFirstName : "Unknown");
             ps.setString(4, contactPersonLastName != null ? contactPersonLastName : "Unknown");
@@ -212,37 +202,27 @@ public class AuthDao {
         return keyHolder.getKey().intValue();
     }
 
+    //complete update (except id, email and password)
     public void updateCustomer(int profileId, SignupRequest profile) {
         String sql = "UPDATE Customers SET first_name=?, last_name=?, phone=?, emergency_contact_first_name=?,emergency_contact_last_name=?,emergency_contact_no=? WHERE customer_id=?";
         jdbcTemplate.update(sql, profile.getFirstName(), profile.getLastName(), profile.getPhone(), profile.getEmergencyContactFirstName(), profile.getEmergencyContactLastName(), profile.getEmergencyContactNo(), profileId);
     }
 
+    //do not update amount_due
     public void updateVendor(int profileId, SignupRequest profile) {
         System.out.println(profile);
         String sql="UPDATE Vendor SET vendor_name=?, contact_person_first_name=?,contact_person_last_name=?,phone=?,street_name=?,city=?,state=?,pin=?,status=? WHERE vendor_id=?";
         jdbcTemplate.update(sql, profile.getVendorName(), profile.getContactPersonFirstName(), profile.getContactPersonLastName(), profile.getPhone(), profile.getStreet_name(), profile.getCity(), profile.getState(), profile.getPin(), profile.getStatus(), profileId);
     }
 
-    public void updateStaff(int profileId, SignupRequest profile) {
-        String sql="UPDATE Staff SET first_name=?,last_name=?,phone=? WHERE staff_id=profileId";
-        jdbcTemplate.update(sql, profile.getFirstName(), profile.getLastName(), profile.getPhone(), profileId);
+    //do not update code,role,
+    public void updateStaff(int profileId, StaffDTO theStaff) {
+        System.out.println(theStaff.toString());
+        String sql="UPDATE Staff SET first_name=?,last_name=?,phone=?,role=?,salary=? WHERE staff_id=?";
+        jdbcTemplate.update(sql, theStaff.getFirst_name(), theStaff.getLast_name(), theStaff.getPhone(),theStaff.getRole(),theStaff.getSalary(), profileId);
     }
 
 
-    public Customer findCustomerById(int profileId) {
-        String sql= "SELECT * FROM Customer WHERE customer_id=?";
-        return jdbcTemplate.queryForObject(sql,new CustomerRowMapper(),profileId);
-    }
-
-    public Vendor findVendorById(int profileId) {
-        String sql= "SELECT * FROM Vendor WHERE vendor_id=?";
-        return jdbcTemplate.queryForObject(sql,new VendorRowMapper(),profileId);
-    }
-
-    public Staff findStaffById(int profileId) {
-        String sql= "SELECT * FROM Staff WHERE staff_id=?";
-        return jdbcTemplate.queryForObject(sql,new StaffRowMapper(),profileId);
-    }
 
     //    password update
     public int updateCustomerPassword(Integer customerId, String newHashedPassword) {
@@ -304,15 +284,21 @@ public class AuthDao {
         ));
     }
 
-    public void deleteVendorById(int vendorId) {
-        String sql="DELETE FROM Vendor WHERE vendor_id=?";
-        jdbcTemplate.update(sql,vendorId);
+    public void changeVendorStatus(int vendorId, String newStatus) {
+        String sql = "UPDATE Vendor SET status=? WHERE vendor_id=?";
+        jdbcTemplate.update(sql,newStatus,vendorId);
     }
 
-    public void deleteStaffById(int staffId) {
-        String sql="DELETE FROM Staff WHERE staff_id=?";
-        jdbcTemplate.update(sql,staffId);
-    }
+
+//    public void deleteVendorById(int vendorId) {
+//        String sql="DELETE FROM Vendor WHERE vendor_id=?";
+//        jdbcTemplate.update(sql,vendorId);
+//    }
+//
+//    public void deleteStaffById(int staffId) {
+//        String sql="DELETE FROM Staff WHERE staff_id=?";
+//        jdbcTemplate.update(sql,staffId);
+//    }
 
     private static class CustomerRowMapper implements RowMapper<Customer> {
         @Override

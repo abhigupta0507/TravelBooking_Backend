@@ -8,51 +8,26 @@ public class SignupRequest {
     private String phone;
     private String password;
     private String userType; // CUSTOMER, VENDOR, STAFF
-    private String role; // For staff: CONTENT_CREATOR, HELP_DESK
-    private String dateOfBirth; // For customer
-    private String gender; // For customer
+    private String role; // For staff
+    private String dateOfBirth;
+    private String gender;
     private String emergencyContactFirstName;
     private String emergencyContactLastName;
     private String emergencyContactNo;
 
-    @Override
-    public String toString() {
-        return "SignupRequest{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                ", password='" + password + '\'' +
-                ", userType='" + userType + '\'' +
-                ", role='" + role + '\'' +
-                ", dateOfBirth='" + dateOfBirth + '\'' +
-                ", gender='" + gender + '\'' +
-                ", emergencyContactFirstName='" + emergencyContactFirstName + '\'' +
-                ", emergencyContactLastName='" + emergencyContactLastName + '\'' +
-                ", emergencyContactNo='" + emergencyContactNo + '\'' +
-                ", serviceType='" + serviceType + '\'' +
-                ", contactPersonFirstName='" + contactPersonFirstName + '\'' +
-                ", contactPersonLastName='" + contactPersonLastName + '\'' +
-               // ", service_type='" + service_type + '\'' +
-                ", street_name='" + street_name + '\'' +
-                ", amount_due='" + amount_due + '\'' +
-                ", city='" + city + '\'' +
-                ", state='" + state + '\'' +
-                ", ifsc_code='" + ifsc_code + '\'' +
-                ", Account_no='" + Account_no + '\'' +
-                ", status='" + status + '\'' +
-                ", vendorName='" + vendorName + '\'' +
-                ", pin='" + pin + '\'' +
-                '}';
-    }
-
     private String serviceType; // For vendor
     private String contactPersonFirstName; // For vendor
-
     private String contactPersonLastName; // For vendor
     private String street_name;
     private String amount_due;
     private String vendorName;
+
+    private String city;
+    private String state;
+    private String pin;
+    private String ifsc_code;
+    private String Account_no;
+    private String status;
 
     public String getAccount_no() {
         return Account_no;
@@ -62,10 +37,6 @@ public class SignupRequest {
         Account_no = account_no;
     }
 
-    private String city;
-    private String state;
-    private String ifsc_code;
-    private String Account_no;
 
     public String getVendorName() {
         return vendorName;
@@ -74,11 +45,6 @@ public class SignupRequest {
     public void setVendorName(String vendorName) {
         this.vendorName = vendorName;
     }
-
-   // private String amount_due;
-    private String status;
-
-
     public String getStreet_name() {
         return street_name;
     }
@@ -135,9 +101,6 @@ public class SignupRequest {
         this.pin = pin;
     }
 
-    private String pin;
-
-    // Getters and Setters
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
 
@@ -191,6 +154,37 @@ public class SignupRequest {
     public String getContactPersonLastName() { return contactPersonLastName; }
     public void setContactPersonLastName(String contactPersonLastName) {
         this.contactPersonLastName = contactPersonLastName;
+    }
+
+    @Override
+    public String toString() {
+        return "SignupRequest{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", password='" + password + '\'' +
+                ", userType='" + userType + '\'' +
+                ", role='" + role + '\'' +
+                ", dateOfBirth='" + dateOfBirth + '\'' +
+                ", gender='" + gender + '\'' +
+                ", emergencyContactFirstName='" + emergencyContactFirstName + '\'' +
+                ", emergencyContactLastName='" + emergencyContactLastName + '\'' +
+                ", emergencyContactNo='" + emergencyContactNo + '\'' +
+                ", serviceType='" + serviceType + '\'' +
+                ", contactPersonFirstName='" + contactPersonFirstName + '\'' +
+                ", contactPersonLastName='" + contactPersonLastName + '\'' +
+                ", service_type='" + serviceType + '\'' +
+                ", street_name='" + street_name + '\'' +
+                ", amount_due='" + amount_due + '\'' +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", ifsc_code='" + ifsc_code + '\'' +
+                ", Account_no='" + Account_no + '\'' +
+                ", status='" + status + '\'' +
+                ", vendorName='" + vendorName + '\'' +
+                ", pin='" + pin + '\'' +
+                '}';
     }
 }
 

@@ -15,6 +15,9 @@ public class StaffDTO {
     private String role;
     private BigDecimal salary;
 
+    public StaffDTO() {
+    }
+
     public StaffDTO(Integer staff_id, String employee_code, String first_name, String last_name, String email, String phone, Date joining_date, String role, BigDecimal salary) {
         this.staff_id = staff_id;
         this.employee_code = employee_code;
@@ -23,6 +26,15 @@ public class StaffDTO {
         this.email = email;
         this.phone = phone;
         this.joining_date = joining_date;
+        this.role = role;
+        this.salary = salary;
+    }
+
+    public StaffDTO(String first_name, String last_name, String email, String phone, String role, BigDecimal salary) {
+        this.first_name = first_name;
+        this.last_name = last_name;
+        this.email = email;
+        this.phone = phone;
         this.role = role;
         this.salary = salary;
     }
@@ -99,5 +111,18 @@ public class StaffDTO {
         this.salary = salary;
     }
 
-
+    @Override
+    public String toString() {
+        return "StaffDTO{" +
+                "staff_id=" + staff_id +
+                ", employee_code='" + employee_code + '\'' +
+                ", first_name='" + first_name + '\'' +
+                ", last_name='" + last_name + '\'' +
+                ", email='" + email + '\'' +
+                ", phone='" + phone + '\'' +
+                ", joining_date=" + joining_date +
+                ", role='" + role + '\'' +
+                ", salary=" + salary +
+                '}';
+    }
 }
