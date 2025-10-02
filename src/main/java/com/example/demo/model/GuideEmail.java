@@ -29,7 +29,7 @@ public class GuideEmail {
 
     @Override
     public String toString() {
-        return "Guide_Email{" +
+        return "GuideEmail{" +
                 "guide_id=" + guide_id +
                 ", email='" + email + '\'' +
                 '}';
