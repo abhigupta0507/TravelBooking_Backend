@@ -1,0 +1,79 @@
+package com.example.demo.controller;
+
+import com.example.demo.dto.ApiResponse;
+import com.example.demo.model.GuideEmail;
+import com.example.demo.service.GuideEmailService;
+import com.example.demo.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/guides/{guideId}/emails")
+@CrossOrigin(origins = "*")
+public class GuideEmailController {
+
+    @Autowired
+    private GuideEmailService guideEmailService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    // Add a new email for a guide
+    @PostMapping("/")
+    public ResponseEntity<ApiResponse<Integer>> addGuideEmail(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer guideId,
+            @RequestBody Map<String, String> payload) {
+
+        try {
+            String email=payload.get("email");
+            String token = authHeader.substring(7);
+            Integer vendorId = jwtUtil.getUserIdFromToken(token);
+
+            int added = guideEmailService.addGuideEmail(vendorId, guideId, email);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Email added successfully", added));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    // Get all emails for a guide
+    @GetMapping("/")
+    public ResponseEntity<ApiResponse<List<GuideEmail>>> getEmails(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer guideId) {
+
+        try {
+            String token = authHeader.substring(7);
+            Integer vendorId = jwtUtil.getUserIdFromToken(token);
+
+            List<GuideEmail> emails = guideEmailService.getEmailsByGuide(vendorId, guideId);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Emails fetched successfully", emails));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    // Delete a specific email of a guide
+    @DeleteMapping("/{email}")
+    public ResponseEntity<ApiResponse<Integer>> deleteGuideEmail(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer guideId,
+            @PathVariable String email) {
+
+        try {
+            String token = authHeader.substring(7);
+            Integer vendorId = jwtUtil.getUserIdFromToken(token);
+
+            int deleted = guideEmailService.deleteGuideEmail(vendorId, guideId, email);
+            return ResponseEntity.ok(new ApiResponse<>(true, "Email deleted successfully", deleted));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+}

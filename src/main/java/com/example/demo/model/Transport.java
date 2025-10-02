@@ -16,6 +16,7 @@ public class Transport {
     private BigDecimal cost;
     private Boolean availability;
     private Integer vendor_id;
+    private String primary_phone;
 
     public Transport() {}
 
@@ -132,6 +133,14 @@ public class Transport {
         this.vendor_id = vendor_id;
     }
 
+    public String getPrimary_phone() {
+        return primary_phone;
+    }
+
+    public void setPrimary_phone(String primary_phone) {
+        this.primary_phone = primary_phone;
+    }
+
     @Override
     public String toString() {
         return "Transport{" +
@@ -147,6 +156,9 @@ public class Transport {
                 ", cost=" + cost +
                 ", availability=" + availability +
                 ", vendor_id=" + vendor_id +
+                ", primary_phone='" + primary_phone + '\'' +
                 '}';
     }
+
+
 }
