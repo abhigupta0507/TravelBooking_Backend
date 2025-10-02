@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.PackageDetailDto;
 import com.example.demo.dto.PackageStatus;
 import com.example.demo.model.TourPackage;
 import com.example.demo.service.PackageService;
@@ -51,8 +52,8 @@ public class PackageController {
 
 
     @GetMapping("/{packageSlug}")
-    public ResponseEntity<ApiResponse<TourPackage>> getPackageBySlug(@PathVariable String packageSlug) {
-        TourPackage thePackage = packageService.findPackageBySlug(packageSlug);
+    public ResponseEntity<ApiResponse<PackageDetailDto>> getPackageBySlug(@PathVariable String packageSlug) {
+        PackageDetailDto thePackage = packageService.findPackageBySlug(packageSlug);
 
         if (thePackage == null) {
             // If the package is not found, return a 404 Not Found response

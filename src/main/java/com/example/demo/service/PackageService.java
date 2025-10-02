@@ -1,7 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.dao.PackageDAO;
+import com.example.demo.dto.PackageDetailDto;
 import com.example.demo.dto.PackageStatus;
+import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,9 @@ public class PackageService {
         return packageDAO.findAllPackagesByStatus(status);
     }
 
-    public TourPackage findPackageBySlug(String slug){
-        return packageDAO.findPackageBySlug(slug);
+    public PackageDetailDto findPackageBySlug(String slug){
+        TourPackage thePackage = packageDAO.findPackageBySlug(slug);
+        List<ItineraryItem> theItems = packageDAO.findAllItineraryItemsByPackageId(thePackage.getPackageId());
+        return PackageDetailDto.from(thePackage,theItems);
     }
 }
