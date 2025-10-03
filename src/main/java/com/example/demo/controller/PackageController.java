@@ -1,15 +1,22 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.CreatePackageRequestDto;
 import com.example.demo.dto.PackageDetailDto;
 import com.example.demo.dto.PackageStatus;
 import com.example.demo.model.TourPackage;
+import com.example.demo.service.AuthService;
 import com.example.demo.service.PackageService;
+import com.example.demo.util.JwtUtil;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/packages")
@@ -17,9 +24,14 @@ import java.util.List;
 public class PackageController {
 
     private PackageService packageService;
+    private JwtUtil jwtUtil;
+    private AuthService authService;
 
-    public PackageController(PackageService packageService) {
+
+    public PackageController(PackageService packageService, JwtUtil jwtUtil, AuthService authService) {
         this.packageService = packageService;
+        this.jwtUtil = jwtUtil;
+        this.authService = authService;
     }
 
     @GetMapping("/")
@@ -47,6 +59,45 @@ public class PackageController {
             // Catch any unexpected errors from the service or DAO layer
             ApiResponse<List<TourPackage>> errorResponse = new ApiResponse<>(false, "An internal server error occurred.", null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<ApiResponse<TourPackage>> createPackage(@Valid @RequestBody CreatePackageRequestDto packageDto, @RequestHeader("Authorization") String authHeader){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("No token found");
+        }
+
+        try{
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            int user_id = jwtUtil.getUserIdFromToken(token);
+
+            if (!Objects.equals(userType, "STAFF")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a staff bro!", null));
+            }
+
+            String role = authService.getStaffRole(user_id);
+            if (!Objects.equals(role, "admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a admin bro!", null));
+            }
+
+            TourPackage createdPackage = packageService.createPackage(packageDto);
+            // Build the location URI for the newly created resource
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentRequest() // Starts with the current request path (/api/packages/)
+                    .path("/{packageSlug}") // Appends the slug placeholder
+                    .buildAndExpand(createdPackage.getSlug()) // Fills the placeholder with the new slug
+                    .toUri();
+
+            // Create the response body
+            ApiResponse<TourPackage> response = new ApiResponse<>(true, "Tour package created successfully.", createdPackage);
+
+            // Return a 201 Created response with the location header and the new package in the body
+            return ResponseEntity.created(location).body(response);
+
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
         }
     }
 
