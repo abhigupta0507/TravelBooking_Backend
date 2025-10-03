@@ -99,6 +99,47 @@ public class PackageDAO {
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToItineraryItem(rs), packageId);
     }
 
+    public ItineraryItem findItineraryItemsById(Integer itemId){
+        String sql = "SELECT * FROM Itinerary_Item WHERE item_id = ?";
+        return jdbcTemplate.queryForObject(sql, (rs,rowNum) -> mapRowToItineraryItem(rs),itemId);
+    }
+
+    /**
+     * Inserts a new ItineraryItem into the database.
+     * The item_id is auto-incremented and created_at is set to the current time.
+     *
+     * @param theItem An ItineraryItem object containing the data for the new item.
+     * @return The auto-generated primary key (item_id) of the newly created item.
+     */
+    public Integer createItineraryItem(ItineraryItem theItem) {
+        String sql = "INSERT INTO Itinerary_Item (package_id, day_number, duration, start_time, end_time, title, description, street_name, city, state, pin, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, theItem.getPackage_id());
+            ps.setInt(2, theItem.getDay_number());
+            ps.setInt(3, theItem.getDuration());
+            ps.setObject(4, theItem.getStart_time()); // Use setObject for LocalDateTime
+            ps.setObject(5, theItem.getEnd_time());   // Use setObject for LocalDateTime
+            ps.setString(6, theItem.getTitle());
+            ps.setString(7, theItem.getDescription());
+            ps.setString(8, theItem.getStreet_name());
+            ps.setString(9, theItem.getCity());
+            ps.setString(10, theItem.getState());
+            ps.setString(11, theItem.getPin());
+            ps.setObject(12, LocalDateTime.now()); // Set created_at to the current time
+            return ps;
+        }, keyHolder);
+
+        // Safely retrieve and return the generated item_id
+        Number key = keyHolder.getKey();
+        return (key != null) ? key.intValue() : null;
+    }
+
+
     private ItineraryItem mapRowToItineraryItem(ResultSet rs) throws SQLException {
         ItineraryItem item = new ItineraryItem();
         item.setPackage_id(rs.getInt("package_id"));

@@ -4,6 +4,7 @@ import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.CreatePackageRequestDto;
 import com.example.demo.dto.PackageDetailDto;
 import com.example.demo.dto.PackageStatus;
+import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.PackageService;
@@ -119,4 +120,41 @@ public class PackageController {
     }
 
 
+    @PostMapping("/itinerary")
+    public ResponseEntity<ApiResponse<ItineraryItem>> createItineraryItem(@Valid @RequestBody ItineraryItem theItem, @RequestHeader("Authorization") String authHeader){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("No token found");
+        }
+
+        try{
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            int user_id = jwtUtil.getUserIdFromToken(token);
+
+            if (!Objects.equals(userType, "STAFF")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a staff bro!", null));
+            }
+
+            String role = authService.getStaffRole(user_id);
+            if (!Objects.equals(role, "admin")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a admin bro!", null));
+            }
+
+            System.out.println(theItem);
+
+            ItineraryItem createdItem = packageService.createItineraryItem(theItem);
+
+            System.out.println(createdItem);
+            // The service handles authorization and creation
+
+            // Create the response body
+            ApiResponse<ItineraryItem> response = new ApiResponse<>(true, "Itinerary item created successfully.", createdItem);
+
+            // Return a 201 Created response with the new item in the body.
+            // No location URI is generated.
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
+        }
+    }
 }

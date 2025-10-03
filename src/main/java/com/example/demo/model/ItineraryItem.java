@@ -39,6 +39,21 @@ public class ItineraryItem {
         this.created_at = created_at;
     }
 
+    public ItineraryItem(Integer package_id,Integer day_number,Integer duration,LocalDateTime start_time,LocalDateTime end_time,String title,String description,String street_name,String city,String state,String pin,LocalDateTime created_at){
+        this.package_id = package_id;
+        this.day_number = day_number;
+        this.duration = duration;
+        this.start_time = start_time;
+        this.end_time = end_time;
+        this.title = title;
+        this.description = description;
+        this.street_name = street_name;
+        this.city = city;
+        this.state = state;
+        this.pin = pin;
+        this.created_at = created_at;
+    }
+
     public Integer getPackage_id() { return package_id; }
     public void setPackage_id(Integer package_id) { this.package_id = package_id; }
 
