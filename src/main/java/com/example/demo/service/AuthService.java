@@ -266,14 +266,19 @@ public class AuthService {
             authDao.updateVendor(profileId,profile);
             return authDao.findVendorById(profileId);
         }
+        else if(Objects.equals(userType,"STAFF")){
+            authDao.updateStaff(profileId,profile);
+            System.out.println(profile);
+            return authDao.findStaffById(profileId);
+        }
         else{
             throw new RuntimeException("INVALID USERTYPE");
         }
     }
 
-    public void updateStaff(int profileId,StaffDTO theStaff){
+    public void updateStaffForAdmin(int profileId,StaffDTO theStaff){
         try{
-            authDao.updateStaff(profileId,theStaff);
+            authDao.updateStaffForAdmin(profileId,theStaff);
         }
         catch(Exception e){
             throw new RuntimeException(e);
@@ -336,7 +341,6 @@ public class AuthService {
                     storedHashedPassword = vendor.getPassword();
                     break;
                 case "STAFF":
-                    // Note: You will need to create findStaffByEmail in your AuthDao
                     Staff staff = authDao.findStaffById(userId);
                     if (staff == null) {
                         throw new RuntimeException("User not found with the specified email and type.");

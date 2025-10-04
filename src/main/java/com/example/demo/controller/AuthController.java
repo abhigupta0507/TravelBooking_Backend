@@ -19,7 +19,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+
 public class AuthController {
 
     @Autowired
@@ -130,10 +130,10 @@ public class AuthController {
 
             //no staff should be updated via this route.
             //staff are updated via admin through a diff route.
-            if(!(Objects.equals(userType, "CUSTOMER")) && !(Objects.equals(userType, "VENDOR"))){
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(new ApiResponse<>(false, "This route only for customers and vendors", null));
-            }
+//            if(!(Objects.equals(userType, "CUSTOMER")) && !(Objects.equals(userType, "VENDOR"))){
+//                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                        .body(new ApiResponse<>(false, "This route only for customers and vendors", null));
+//            }
 
             //update and fetch updated user
             User user = authService.updateProfile(profileId, userType, profile);
@@ -203,7 +203,7 @@ public class AuthController {
 
             if (!userId.equals(vendorId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(new ApiResponse<>(false, "Access Denied: You are not authorized to change the password for this profile", null));
+                        .body(new ApiResponse<>(false, "Access Denied", null));
             }
 
             authService.changeVendorStatus(vendorId,changeStatusDto.getNewStatus());

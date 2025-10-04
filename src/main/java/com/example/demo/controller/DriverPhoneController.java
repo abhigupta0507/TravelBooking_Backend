@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/transports/{driverId}/phones")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class DriverPhoneController {
 
     @Autowired

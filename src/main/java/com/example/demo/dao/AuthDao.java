@@ -204,24 +204,28 @@ public class AuthDao {
 
     //complete update (except id, email and password)
     public void updateCustomer(int profileId, SignupRequest profile) {
-        String sql = "UPDATE Customers SET first_name=?, last_name=?, phone=?, emergency_contact_first_name=?,emergency_contact_last_name=?,emergency_contact_no=? WHERE customer_id=?";
-        jdbcTemplate.update(sql, profile.getFirstName(), profile.getLastName(), profile.getPhone(), profile.getEmergencyContactFirstName(), profile.getEmergencyContactLastName(), profile.getEmergencyContactNo(), profileId);
+        String sql = "UPDATE Customer SET first_name=?, last_name=?, phone=?, emergency_contact_first_name=?,emergency_contact_last_name=?,date_of_birth=?,gender=?,emergency_contact_no=? WHERE customer_id=?";
+        jdbcTemplate.update(sql, profile.getFirstName(), profile.getLastName(), profile.getPhone(), profile.getEmergencyContactFirstName(), profile.getEmergencyContactLastName(),profile.getDateOfBirth(),profile.getGender(), profile.getEmergencyContactNo(), profileId);
     }
 
     //do not update amount_due
     public void updateVendor(int profileId, SignupRequest profile) {
-        System.out.println(profile);
-        String sql="UPDATE Vendor SET vendor_name=?, contact_person_first_name=?,contact_person_last_name=?,phone=?,street_name=?,city=?,state=?,pin=?,status=? WHERE vendor_id=?";
-        jdbcTemplate.update(sql, profile.getVendorName(), profile.getContactPersonFirstName(), profile.getContactPersonLastName(), profile.getPhone(), profile.getStreet_name(), profile.getCity(), profile.getState(), profile.getPin(), profile.getStatus(), profileId);
+        //System.out.println(profile);
+        String sql="UPDATE Vendor SET vendor_name=?, contact_person_first_name=?,contact_person_last_name=?,phone=?,street_name=?,city=?,state=?,pin=?,account_no=?, ifsc_code=? ,status=? WHERE vendor_id=?";
+        jdbcTemplate.update(sql, profile.getVendorName(), profile.getContactPersonFirstName(), profile.getContactPersonLastName(), profile.getPhone(), profile.getStreet_name(), profile.getCity(), profile.getState(), profile.getPin(),profile.getAccount_no(),profile.getIfsc_code(), profile.getStatus(), profileId);
     }
 
     //do not update code,role,
-    public void updateStaff(int profileId, StaffDTO theStaff) {
+    public void updateStaffForAdmin(int profileId, StaffDTO theStaff) {
         System.out.println(theStaff.toString());
         String sql="UPDATE Staff SET first_name=?,last_name=?,phone=?,role=?,salary=? WHERE staff_id=?";
         jdbcTemplate.update(sql, theStaff.getFirst_name(), theStaff.getLast_name(), theStaff.getPhone(),theStaff.getRole(),theStaff.getSalary(), profileId);
     }
 
+    public void updateStaff(int profileId,SignupRequest profile){
+        String sql="UPDATE Staff SET first_name=?, last_name=?, phone=? WHERE staff_id=?";
+        jdbcTemplate.update(sql,profile.getFirstName(),profile.getLastName(),profile.getPhone(),profileId);
+    }
 
 
     //    password update

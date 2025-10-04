@@ -19,7 +19,7 @@ public class GuidePhoneNoDao {
 
 
     public int addGuidePhoneNo(Integer guideId, String phoneNo) {
-        String sql = "INSERT INTO Guide_PhoneNo (guide_id, phone_no) VALUES (?, ?)";
+        String sql = "INSERT INTO Guide_Phone_No (guide_id, phone_no) VALUES (?, ?)";
         try {
             return jdbcTemplate.update(sql, guideId, phoneNo);
         } catch (DuplicateKeyException e) {
@@ -30,19 +30,19 @@ public class GuidePhoneNoDao {
 
     // ✅ 2. Get all phone numbers for a guide
     public List<GuidePhoneNo> getPhoneNosByGuide(Integer guideId) {
-        String sql = "SELECT * FROM Guide_PhoneNo WHERE guide_id = ?";
+        String sql = "SELECT * FROM Guide_Phone_No WHERE guide_id = ?";
         return jdbcTemplate.query(sql, new GuidePhoneNoRowMapper(), guideId);
     }
 
     // ✅ 3. Delete a specific phone number of a guide
     public int deleteGuidePhoneNo(Integer guideId, String phoneNo) {
-        String sql = "DELETE FROM Guide_PhoneNo WHERE guide_id = ? AND phone_no = ?";
+        String sql = "DELETE FROM Guide_Phone_No WHERE guide_id = ? AND phone_no = ?";
         return jdbcTemplate.update(sql, guideId, phoneNo);
     }
 
     // ✅ 4. Delete all phone numbers of a guide (optional, for manual cleanup)
     public int deleteAllPhoneNosOfGuide(Integer guideId) {
-        String sql = "DELETE FROM Guide_PhoneNo WHERE guide_id = ?";
+        String sql = "DELETE FROM Guide_Phone_No WHERE guide_id = ?";
         return jdbcTemplate.update(sql, guideId);
     }
 

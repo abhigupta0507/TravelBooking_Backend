@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/guides")
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class GuideController {
 
     @Autowired

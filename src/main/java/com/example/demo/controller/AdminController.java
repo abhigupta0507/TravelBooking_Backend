@@ -17,7 +17,6 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "*")
 public class AdminController {
     private AuthService authService;
     private JwtUtil jwtUtil;
@@ -222,13 +221,17 @@ public class AdminController {
             }
 
 
+
             String role = authService.getStaffRole(user_id);
             if (!Objects.equals(role, "admin")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a admin bro!", null));
             }
 
+            if(user_id==staffId){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Cannot update your own salary,role etc. Do via profile!",null));
+            }
 
-            authService.updateStaff(staffId, theStaff);
+            authService.updateStaffForAdmin(staffId, theStaff);
             Staff dbStaff = authService.getStaffById(staffId);
             dbStaff.setPassword(null);
             dbStaff.setUserType("STAFF");
