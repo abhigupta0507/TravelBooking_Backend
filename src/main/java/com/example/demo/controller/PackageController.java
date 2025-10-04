@@ -1,17 +1,16 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.ApiResponse;
-import com.example.demo.dto.CreatePackageRequestDto;
-import com.example.demo.dto.PackageDetailDto;
-import com.example.demo.dto.PackageStatus;
+import com.example.demo.dto.*;
 import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.PackageService;
+import com.example.demo.util.AuthorizationService;
 import com.example.demo.util.JwtUtil;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.config.TaskSchedulerRouter;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -27,7 +26,7 @@ public class PackageController {
     private PackageService packageService;
     private JwtUtil jwtUtil;
     private AuthService authService;
-
+    private AuthorizationService authorizationService;
 
     public PackageController(PackageService packageService, JwtUtil jwtUtil, AuthService authService) {
         this.packageService = packageService;
@@ -157,4 +156,27 @@ public class PackageController {
             return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
         }
     }
+
+    @PutMapping("/{packageSlug}")
+    public ResponseEntity<ApiResponse<TourPackage>> updatePackage(
+            @PathVariable String packageSlug,
+            @Valid @RequestBody UpdatePackageRequestDto packageDto,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            TourPackage updatedPackage = packageService.updatePackage(packageSlug, packageDto, authHeader);
+            ApiResponse<TourPackage> response = new ApiResponse<>(true, "Package updated successfully.", updatedPackage);
+            return ResponseEntity.ok(response);
+
+        } catch (SecurityException e) {
+            // Correctly handle authorization failures with a 403 status.
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+        catch (Exception e) {
+            // Correctly handle the "not found" case with a 404 status.
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
 }

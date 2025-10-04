@@ -139,6 +139,25 @@ public class PackageDAO {
         return (key != null) ? key.intValue() : null;
     }
 
+    public void updatePackage(TourPackage packageData) {
+        // The slug will be automatically updated by the database trigger if the name changes.
+        String sql = "UPDATE Tour_Package SET " +
+                "name = ?, tour_type = ?, image_url = ?, duration_days = ?, " +
+                "price = ?, max_capacity = ?, itinerary_summary = ?, status = ? " +
+                "WHERE package_id = ?";
+
+        jdbcTemplate.update(sql,
+                packageData.getName(),
+                packageData.getTour_type(),
+                packageData.getImage_url(),
+                packageData.getDuration_days(),
+                packageData.getPrice(),
+                packageData.getMax_capacity(),
+                packageData.getItinerary_summary(),
+                packageData.getStatus().name(),
+                packageData.getPackageId());
+    }
+
 
     private ItineraryItem mapRowToItineraryItem(ResultSet rs) throws SQLException {
         ItineraryItem item = new ItineraryItem();
