@@ -94,50 +94,6 @@ public class PackageDAO {
         return (key != null) ? key.intValue() : null;
     }
 
-    public List<ItineraryItem> findAllItineraryItemsByPackageId(Integer packageId){
-        String sql = "SELECT * FROM Itinerary_Item WHERE package_id = ? ORDER BY day_number, start_time";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToItineraryItem(rs), packageId);
-    }
-
-    public ItineraryItem findItineraryItemsById(Integer itemId){
-        String sql = "SELECT * FROM Itinerary_Item WHERE item_id = ?";
-        return jdbcTemplate.queryForObject(sql, (rs,rowNum) -> mapRowToItineraryItem(rs),itemId);
-    }
-
-    /**
-     * Inserts a new ItineraryItem into the database.
-     * The item_id is auto-incremented and created_at is set to the current time.
-     *
-     * @param theItem An ItineraryItem object containing the data for the new item.
-     * @return The auto-generated primary key (item_id) of the newly created item.
-     */
-    public Integer createItineraryItem(ItineraryItem theItem) {
-        String sql = "INSERT INTO Itinerary_Item (package_id, day_number, duration, start_time, end_time, title, description, street_name, city, state, pin, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-
-        jdbcTemplate.update(connection -> {
-            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            ps.setInt(1, theItem.getPackage_id());
-            ps.setInt(2, theItem.getDay_number());
-            ps.setInt(3, theItem.getDuration());
-            ps.setObject(4, theItem.getStart_time()); // Use setObject for LocalDateTime
-            ps.setObject(5, theItem.getEnd_time());   // Use setObject for LocalDateTime
-            ps.setString(6, theItem.getTitle());
-            ps.setString(7, theItem.getDescription());
-            ps.setString(8, theItem.getStreet_name());
-            ps.setString(9, theItem.getCity());
-            ps.setString(10, theItem.getState());
-            ps.setString(11, theItem.getPin());
-            ps.setObject(12, LocalDateTime.now()); // Set created_at to the current time
-            return ps;
-        }, keyHolder);
-
-        // Safely retrieve and return the generated item_id
-        Number key = keyHolder.getKey();
-        return (key != null) ? key.intValue() : null;
-    }
 
     public void updatePackage(TourPackage packageData) {
         // The slug will be automatically updated by the database trigger if the name changes.
@@ -158,6 +114,76 @@ public class PackageDAO {
                 packageData.getPackageId());
     }
 
+
+    public List<ItineraryItem> findAllItineraryItemsByPackageId(Integer packageId){
+        String sql = "SELECT * FROM Itinerary_Item WHERE package_id = ? ORDER BY day_number, start_time";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToItineraryItem(rs), packageId);
+    }
+
+    public ItineraryItem findItineraryItemsById(Integer itemId,Integer packageId){
+        String sql = "SELECT * FROM Itinerary_Item WHERE item_id = ? and package_id = ?";
+        return jdbcTemplate.queryForObject(sql, (rs,rowNum) -> mapRowToItineraryItem(rs),itemId,packageId);
+    }
+
+
+    /**
+     * Inserts a new ItineraryItem into the database.
+     * The item_id is auto-incremented and created_at is set to the current time.
+     *
+     * @param theItem An ItineraryItem object containing the data for the new item.
+     * @return The auto-generated primary key (item_id) of the newly created item.
+     */
+    public Integer createItineraryItem(ItineraryItem theItem) {
+        String insertSql = "INSERT INTO Itinerary_Item (package_id, day_number, duration, start_time, end_time, title, description, street_name, city, state, pin, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        // Step 1: Perform the insert. The database trigger will calculate and set the item_id.
+        jdbcTemplate.update(insertSql,
+                theItem.getPackage_id(),
+                theItem.getDay_number(),
+                theItem.getDuration(),
+                theItem.getStart_time(),
+                theItem.getEnd_time(),
+                theItem.getTitle(),
+                theItem.getDescription(),
+                theItem.getStreet_name(),
+                theItem.getCity(),
+                theItem.getState(),
+                theItem.getPin(),
+                LocalDateTime.now()
+        );
+
+        // Step 2: Fetch the item we just created by getting the one with the highest item_id for this package.
+        String selectSql = "SELECT MAX(item_id) FROM Itinerary_Item WHERE package_id = ?";
+        try {
+            // Use queryForObject to get a single Integer value.
+            return jdbcTemplate.queryForObject(selectSql, Integer.class, theItem.getPackage_id());
+        } catch (EmptyResultDataAccessException e) {
+            // This should not happen if the insert was successful, but it's good practice to handle it.
+            throw new RuntimeException("Failed to retrieve itinerary item ID immediately after creation for package ID: " + theItem.getPackage_id());
+        }
+    }
+
+    public void updateItineraryItem(ItineraryItem theItem){
+        String sql = "UPDATE Itinerary_Item SET day_number = ?, duration = ?, start_time = ?, end_time = ?,title = ?, description = ?, street_name = ?, city = ?, state = ?, pin = ?" +
+                " WHERE package_id = ? and item_id = ?";
+
+        jdbcTemplate.update(
+                sql,
+                theItem.getDay_number(),
+                theItem.getDuration(),
+                theItem.getStart_time(),
+                theItem.getEnd_time(),
+                theItem.getTitle(),
+                theItem.getDescription(),
+                theItem.getStreet_name(),
+                theItem.getCity(),
+                theItem.getState(),
+                theItem.getPin(),
+                theItem.getPackage_id(),
+                theItem.getItem_id());
+
+    }
 
     private ItineraryItem mapRowToItineraryItem(ResultSet rs) throws SQLException {
         ItineraryItem item = new ItineraryItem();

@@ -1,10 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dao.PackageDAO;
-import com.example.demo.dto.CreatePackageRequestDto;
-import com.example.demo.dto.PackageDetailDto;
-import com.example.demo.dto.PackageStatus;
-import com.example.demo.dto.UpdatePackageRequestDto;
+import com.example.demo.dto.*;
 import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
 import com.example.demo.util.AuthorizationService;
@@ -101,6 +98,34 @@ public class PackageService {
             throw new RuntimeException("Failed to create the itinerary item. No ID was returned.");
         }
 
-        return packageDAO.findItineraryItemsById(newItemId);
+        return packageDAO.findItineraryItemsById(newItemId,theItem.getPackage_id());
+    }
+
+    public ItineraryItem updateItineraryItem(String packageSlug, Integer itemId, UpdateItineraryItemRequestDto updatedItem, String authHeader) throws Exception{
+        authorizationService.verifyAdminStaff(authHeader);
+        // Step 2: Find the parent package first.
+        TourPackage parentPackage = packageDAO.findPackageBySlug(packageSlug);
+        if (parentPackage == null) {
+            throw new Exception("Package with slug '" + packageSlug + "' not found.");
+        }
+
+        // Step 3: Find the itinerary item, ensuring it belongs to the correct package.
+        ItineraryItem existingItem = packageDAO.findItineraryItemsById(itemId, parentPackage.getPackageId());
+        if (existingItem == null) {
+            throw new Exception("Itinerary item with ID '" + itemId + "' not found in package '" + packageSlug + "'.");
+        }
+        existingItem.setDay_number(updatedItem.getDay_number());
+        existingItem.setDuration(updatedItem.getDuration());
+        existingItem.setStart_time(updatedItem.getStart_time());
+        existingItem.setEnd_time(updatedItem.getEnd_time());
+        existingItem.setTitle(updatedItem.getTitle());
+        existingItem.setDescription(updatedItem.getDescription());
+        existingItem.setStreet_name(updatedItem.getStreet_name());
+        existingItem.setCity(updatedItem.getCity());
+        existingItem.setState(updatedItem.getState());
+        existingItem.setPin(updatedItem.getPin());
+
+        packageDAO.updateItineraryItem(existingItem);
+        return packageDAO.findItineraryItemsById(itemId,existingItem.getPackage_id());
     }
 }

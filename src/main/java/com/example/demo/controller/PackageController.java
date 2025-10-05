@@ -26,7 +26,6 @@ public class PackageController {
     private PackageService packageService;
     private JwtUtil jwtUtil;
     private AuthService authService;
-    private AuthorizationService authorizationService;
 
     public PackageController(PackageService packageService, JwtUtil jwtUtil, AuthService authService) {
         this.packageService = packageService;
@@ -165,6 +164,28 @@ public class PackageController {
         try {
             TourPackage updatedPackage = packageService.updatePackage(packageSlug, packageDto, authHeader);
             ApiResponse<TourPackage> response = new ApiResponse<>(true, "Package updated successfully.", updatedPackage);
+            return ResponseEntity.ok(response);
+
+        } catch (SecurityException e) {
+            // Correctly handle authorization failures with a 403 status.
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+        catch (Exception e) {
+            // Correctly handle the "not found" case with a 404 status.
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/{packageSlug}/{itemId}")
+    public ResponseEntity<ApiResponse<ItineraryItem>> updateItineraryItem(
+            @PathVariable String packageSlug, @PathVariable Integer itemId,
+            @Valid @RequestBody UpdateItineraryItemRequestDto itemDto,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            ItineraryItem updatedItem = packageService.updateItineraryItem(packageSlug, itemId, itemDto, authHeader);
+            ApiResponse<ItineraryItem> response = new ApiResponse<>(true, "Item updated successfully.", updatedItem);
             return ResponseEntity.ok(response);
 
         } catch (SecurityException e) {
