@@ -1,22 +1,23 @@
 package com.example.demo.service;
 
 import com.example.demo.dao.PackageDAO;
-import com.example.demo.dto.CreatePackageRequestDto;
-import com.example.demo.dto.PackageDetailDto;
-import com.example.demo.dto.PackageStatus;
+import com.example.demo.dto.*;
 import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
+import com.example.demo.util.AuthorizationService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class PackageService {
-    public PackageService(PackageDAO packageDAO) {
-        this.packageDAO = packageDAO;
-    }
+    private final PackageDAO packageDAO;
+    private final AuthorizationService authorizationService;
 
-    private PackageDAO packageDAO;
+    public PackageService(PackageDAO packageDAO, AuthorizationService authorizationService) {
+        this.packageDAO = packageDAO;
+        this.authorizationService = authorizationService;
+    }
 
     public List<TourPackage> findAllPackages() {
         return packageDAO.findAllPackages();
@@ -57,6 +58,42 @@ public class PackageService {
         return packageDAO.findPackageById(newPackageId);
     }
 
+    public TourPackage updatePackage(String slug, UpdatePackageRequestDto requestDto, String authHeader) throws Exception {
+        // Step 1: Authorize the user first. This is a secure gateway.
+        authorizationService.verifyAdminStaff(authHeader);
+
+        // Step 2: Find the existing package by its slug.
+        TourPackage existingPackage = packageDAO.findPackageBySlug(slug);
+
+        // Step 3: If it doesn't exist, throw a specific exception for the controller to handle.
+        if (existingPackage == null) {
+            throw new Exception("Package with slug '" + slug + "' not found.");
+        }
+
+        // Step 4: Manually update the fields from the DTO.
+        // This is the key step that prevents the Mass Assignment security vulnerability.
+        existingPackage.setName(requestDto.getName());
+        existingPackage.setTour_type(requestDto.getTour_type());
+        existingPackage.setImage_url(requestDto.getImage_url());
+        existingPackage.setDuration_days(requestDto.getDuration_days());
+        existingPackage.setPrice(requestDto.getPrice());
+        existingPackage.setMax_capacity(requestDto.getMax_capacity());
+        existingPackage.setItinerary_summary(requestDto.getItinerary_summary());
+        existingPackage.setStatus(requestDto.getStatus());
+
+        // Step 5: Call the DAO to persist the changes.
+        packageDAO.updatePackage(existingPackage);
+
+        // Step 6: Return the fully updated package. This ensures we get the new slug if the name changed.
+        return packageDAO.findPackageById(existingPackage.getPackageId());
+    }
+
+    public Integer deletePackage(String packageSlug, String authHeader) throws Exception{
+        authorizationService.verifyAdminStaff(authHeader);
+        return packageDAO.deletePackage(packageSlug);
+    }
+
+
     public ItineraryItem createItineraryItem(ItineraryItem theItem){
         System.out.println(theItem);
         Integer newItemId = packageDAO.createItineraryItem(theItem);
@@ -66,6 +103,40 @@ public class PackageService {
             throw new RuntimeException("Failed to create the itinerary item. No ID was returned.");
         }
 
-        return packageDAO.findItineraryItemsById(newItemId);
+        return packageDAO.findItineraryItemsById(newItemId,theItem.getPackage_id());
+    }
+
+    public ItineraryItem updateItineraryItem(String packageSlug, Integer itemId, UpdateItineraryItemRequestDto updatedItem, String authHeader) throws Exception{
+        authorizationService.verifyAdminStaff(authHeader);
+        // Step 2: Find the parent package first.
+        TourPackage parentPackage = packageDAO.findPackageBySlug(packageSlug);
+        if (parentPackage == null) {
+            throw new Exception("Package with slug '" + packageSlug + "' not found.");
+        }
+
+        // Step 3: Find the itinerary item, ensuring it belongs to the correct package.
+        ItineraryItem existingItem = packageDAO.findItineraryItemsById(itemId, parentPackage.getPackageId());
+        if (existingItem == null) {
+            throw new Exception("Itinerary item with ID '" + itemId + "' not found in package '" + packageSlug + "'.");
+        }
+        existingItem.setDay_number(updatedItem.getDay_number());
+        existingItem.setDuration(updatedItem.getDuration());
+        existingItem.setStart_time(updatedItem.getStart_time());
+        existingItem.setEnd_time(updatedItem.getEnd_time());
+        existingItem.setTitle(updatedItem.getTitle());
+        existingItem.setDescription(updatedItem.getDescription());
+        existingItem.setStreet_name(updatedItem.getStreet_name());
+        existingItem.setCity(updatedItem.getCity());
+        existingItem.setState(updatedItem.getState());
+        existingItem.setPin(updatedItem.getPin());
+
+        packageDAO.updateItineraryItem(existingItem);
+        return packageDAO.findItineraryItemsById(itemId,existingItem.getPackage_id());
+    }
+
+    public Integer deleteItineraryItem(String packageSlug,Integer itemId, String authHeader) throws Exception{
+        authorizationService.verifyAdminStaff(authHeader);
+        TourPackage thePackage = packageDAO.findPackageBySlug(packageSlug);
+        return packageDAO.deleteItineraryItem(itemId, thePackage.getPackageId());
     }
 }
