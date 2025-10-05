@@ -88,6 +88,11 @@ public class PackageService {
         return packageDAO.findPackageById(existingPackage.getPackageId());
     }
 
+    public Integer deletePackage(String packageSlug, String authHeader) throws Exception{
+        authorizationService.verifyAdminStaff(authHeader);
+        return packageDAO.deletePackage(packageSlug);
+    }
+
 
     public ItineraryItem createItineraryItem(ItineraryItem theItem){
         System.out.println(theItem);
@@ -127,5 +132,11 @@ public class PackageService {
 
         packageDAO.updateItineraryItem(existingItem);
         return packageDAO.findItineraryItemsById(itemId,existingItem.getPackage_id());
+    }
+
+    public Integer deleteItineraryItem(String packageSlug,Integer itemId, String authHeader) throws Exception{
+        authorizationService.verifyAdminStaff(authHeader);
+        TourPackage thePackage = packageDAO.findPackageBySlug(packageSlug);
+        return packageDAO.deleteItineraryItem(itemId, thePackage.getPackageId());
     }
 }

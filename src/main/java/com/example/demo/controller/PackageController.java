@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.config.TaskSchedulerRouter;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -199,5 +200,36 @@ public class PackageController {
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
+
+    @DeleteMapping("/{packageSlug}/{itemId}")
+    public ResponseEntity<ApiResponse<String>> deleteItineraryItem(@PathVariable String packageSlug, @PathVariable Integer itemId,@RequestHeader("Authorization") String authHeader){
+        try {
+            int deleted = packageService.deleteItineraryItem(packageSlug,itemId,authHeader);
+            if (deleted == 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false,"Itinerary Item not found or not deleted",null));
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(true,"Itinerary Item deleted Successfully",null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Error deleting Itinerary Item: " + e.getMessage(),null));
+        }
+    }
+
+    @DeleteMapping("/{packageSlug}")
+    public ResponseEntity<ApiResponse<String>> deletePackage(@PathVariable String packageSlug, @RequestHeader("Authorization") String authHeader){
+        try {
+            int deleted = packageService.deletePackage(packageSlug,authHeader);
+            if (deleted == 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false,"Tour Package not found or not deleted",null));
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(true,"Tour Package deleted Successfully",null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Error deleting Tour Package: " + e.getMessage(),null));
+        }
+    }
+
 
 }

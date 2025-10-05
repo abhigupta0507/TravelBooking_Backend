@@ -114,6 +114,12 @@ public class PackageDAO {
                 packageData.getPackageId());
     }
 
+    public Integer deletePackage(String packageSlug){
+        System.out.println(packageSlug);
+        String sql = "DELETE FROM Tour_Package WHERE slug = ?";
+        return jdbcTemplate.update(sql,packageSlug);
+    }
+
 
     public List<ItineraryItem> findAllItineraryItemsByPackageId(Integer packageId){
         String sql = "SELECT * FROM Itinerary_Item WHERE package_id = ? ORDER BY day_number, start_time";
@@ -183,6 +189,11 @@ public class PackageDAO {
                 theItem.getPackage_id(),
                 theItem.getItem_id());
 
+    }
+
+    public Integer deleteItineraryItem(Integer item_id, Integer package_id) throws SQLException{
+        String sql = "DELETE FROM Itinerary_Item WHERE item_id = ? and package_id = ?";
+        return jdbcTemplate.update(sql,item_id,package_id);
     }
 
     private ItineraryItem mapRowToItineraryItem(ResultSet rs) throws SQLException {
