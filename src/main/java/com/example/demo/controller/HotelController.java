@@ -86,6 +86,10 @@ public class HotelController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to create hotels.");
             }
+
+            // ! BUG
+            // also check for service_type
+
             hotel.setVendorId(userId);
 
             if (hotel.getCity() != null) {
