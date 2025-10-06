@@ -19,7 +19,6 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
-
 public class AuthController {
 
     @Autowired
