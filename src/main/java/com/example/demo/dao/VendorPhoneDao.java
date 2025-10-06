@@ -53,7 +53,7 @@ public class VendorPhoneDao {
         public VendorPhone mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new VendorPhone(
                     rs.getInt("vendor_id"),
-                    rs.getString("phone_no")
+                    rs.getString("phone")
             );
         }
     }
