@@ -55,4 +55,30 @@ public class AuthorizationService {
             throw new SecurityException("Invalid or expired token.");
         }
     }
+
+    public void verifyPackageManagerStaff(String authHeader) throws SecurityException {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new SecurityException("Missing or invalid Authorization header.");
+        }
+
+        try {
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            int userId = jwtUtil.getUserIdFromToken(token);
+
+            if (!"STAFF".equalsIgnoreCase(userType)) {
+                throw new SecurityException("Access Denied: Only staff members can perform this action.");
+            }
+
+            // You will need to ensure getStaffRole() exists and works in AuthService
+            String role = authService.getStaffRole(userId);
+            if (!"PackageManager".equalsIgnoreCase(role)) {
+                throw new SecurityException("Access Denied: PackageManager privileges required.");
+            }
+            // If we reach here, the user is an authorized admin staff.
+        } catch (JwtException e) {
+            // This catches errors like expired tokens, malformed tokens, etc.
+            throw new SecurityException("Invalid or expired token.");
+        }
+    }
 }

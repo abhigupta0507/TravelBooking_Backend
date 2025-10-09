@@ -21,7 +21,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/packages")
-@CrossOrigin("*")
+//@CrossOrigin("*")
 public class PackageController {
 
     private PackageService packageService;
@@ -64,25 +64,8 @@ public class PackageController {
 
     @PostMapping("/")
     public ResponseEntity<ApiResponse<TourPackage>> createPackage(@Valid @RequestBody CreatePackageRequestDto packageDto, @RequestHeader("Authorization") String authHeader){
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("No token found");
-        }
-
         try{
-            String token = authHeader.substring(7);
-            String userType = jwtUtil.getUserTypeFromToken(token);
-            int user_id = jwtUtil.getUserIdFromToken(token);
-
-            if (!Objects.equals(userType, "STAFF")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a staff bro!", null));
-            }
-
-            String role = authService.getStaffRole(user_id);
-            if (!Objects.equals(role, "admin")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a admin bro!", null));
-            }
-
-            TourPackage createdPackage = packageService.createPackage(packageDto);
+            TourPackage createdPackage = packageService.createPackage(authHeader,packageDto);
             // Build the location URI for the newly created resource
             URI location = ServletUriComponentsBuilder
                     .fromCurrentRequest() // Starts with the current request path (/api/packages/)
@@ -121,31 +104,8 @@ public class PackageController {
 
     @PostMapping("/itinerary")
     public ResponseEntity<ApiResponse<ItineraryItem>> createItineraryItem(@Valid @RequestBody ItineraryItem theItem, @RequestHeader("Authorization") String authHeader){
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new RuntimeException("No token found");
-        }
-
         try{
-            String token = authHeader.substring(7);
-            String userType = jwtUtil.getUserTypeFromToken(token);
-            int user_id = jwtUtil.getUserIdFromToken(token);
-
-            if (!Objects.equals(userType, "STAFF")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a staff bro!", null));
-            }
-
-            String role = authService.getStaffRole(user_id);
-            if (!Objects.equals(role, "admin")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false, "Be a admin bro!", null));
-            }
-
-            System.out.println(theItem);
-
-            ItineraryItem createdItem = packageService.createItineraryItem(theItem);
-
-            System.out.println(createdItem);
-            // The service handles authorization and creation
-
+            ItineraryItem createdItem = packageService.createItineraryItem(authHeader, theItem);
             // Create the response body
             ApiResponse<ItineraryItem> response = new ApiResponse<>(true, "Itinerary item created successfully.", createdItem);
 

@@ -33,7 +33,8 @@ public class PackageService {
         return PackageDetailDto.from(thePackage,theItems);
     }
 
-    public TourPackage createPackage(CreatePackageRequestDto requestDto) {
+    public TourPackage createPackage(String authHeader, CreatePackageRequestDto requestDto) throws SecurityException {
+        authorizationService.verifyPackageManagerStaff(authHeader);
         // 1. Convert the DTO into a TourPackage model object.
         TourPackage newPackage = new TourPackage();
         newPackage.setName(requestDto.getName());
@@ -60,7 +61,7 @@ public class PackageService {
 
     public TourPackage updatePackage(String slug, UpdatePackageRequestDto requestDto, String authHeader) throws Exception {
         // Step 1: Authorize the user first. This is a secure gateway.
-        authorizationService.verifyAdminStaff(authHeader);
+        authorizationService.verifyPackageManagerStaff(authHeader);
 
         // Step 2: Find the existing package by its slug.
         TourPackage existingPackage = packageDAO.findPackageBySlug(slug);
@@ -89,15 +90,14 @@ public class PackageService {
     }
 
     public Integer deletePackage(String packageSlug, String authHeader) throws Exception{
-        authorizationService.verifyAdminStaff(authHeader);
+        authorizationService.verifyPackageManagerStaff(authHeader);
         return packageDAO.deletePackage(packageSlug);
     }
 
 
-    public ItineraryItem createItineraryItem(ItineraryItem theItem){
-        System.out.println(theItem);
+    public ItineraryItem createItineraryItem(String authHeader, ItineraryItem theItem) throws SecurityException{
+        authorizationService.verifyPackageManagerStaff(authHeader);
         Integer newItemId = packageDAO.createItineraryItem(theItem);
-        System.out.println(newItemId);
 
         if(newItemId == null){
             throw new RuntimeException("Failed to create the itinerary item. No ID was returned.");
@@ -107,7 +107,7 @@ public class PackageService {
     }
 
     public ItineraryItem updateItineraryItem(String packageSlug, Integer itemId, UpdateItineraryItemRequestDto updatedItem, String authHeader) throws Exception{
-        authorizationService.verifyAdminStaff(authHeader);
+        authorizationService.verifyPackageManagerStaff(authHeader);
         // Step 2: Find the parent package first.
         TourPackage parentPackage = packageDAO.findPackageBySlug(packageSlug);
         if (parentPackage == null) {
