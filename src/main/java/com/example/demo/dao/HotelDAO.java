@@ -51,6 +51,11 @@ public class HotelDAO {
         return jdbcTemplate.query(sql, new Object[]{hotelId}, new RoomRowMapper());
     }
 
+    public RoomType findRoomByHotelAndRoomId(int hotelId,int roomId){
+        String sql="SELECT * FROM RoomType WHERE hotel_id=? AND room_id=?";
+        return jdbcTemplate.queryForObject(sql,new RoomRowMapper(), hotelId,roomId);
+    }
+
     // To update room details
     public boolean updateRoom(RoomType room) {
         String sql = """
@@ -173,6 +178,11 @@ public class HotelDAO {
         return hotel;
     }
 
+    public String getRoomType(Integer hotelId, Integer roomId) {
+        String sql="SELECT type FROM RoomType WHERE hotel_id=? AND room_id=?";
+        return jdbcTemplate.queryForObject(sql,String.class,hotelId,roomId);
+    }
+
     private static class RoomRowMapper implements RowMapper<RoomType> {
         @Override
         public RoomType mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -180,7 +190,7 @@ public class HotelDAO {
                     rs.getInt("hotel_id"),
                     rs.getInt("room_id"),
                     rs.getBoolean("balcony_available"),
-                    rs.getBigDecimal("cost_per_night"),
+                    rs.getInt("cost_per_night"),
                     rs.getString("type"),
                     rs.getString("bed_type"),
                     rs.getInt("max_capacity"),

@@ -1,13 +1,12 @@
 package com.example.demo.model;
 
-import java.math.BigDecimal;
 
 public class RoomType {
 
     private Integer hotel_id;
     private Integer room_id;
     private Boolean balcony_available;
-    private BigDecimal cost_per_night;
+    private int cost_per_night;
     private String type;
     private String bed_type;
     private Integer max_capacity;
@@ -15,7 +14,7 @@ public class RoomType {
 
     public RoomType() {}
 
-    public RoomType(Integer hotel_id, Integer room_id, Boolean balcony_available, BigDecimal cost_per_night,
+    public RoomType(Integer hotel_id, Integer room_id, Boolean balcony_available, int cost_per_night,
                     String type, String bed_type, Integer max_capacity, Integer number_of_rooms_available) {
         this.hotel_id = hotel_id;
         this.room_id = room_id;
@@ -36,8 +35,8 @@ public class RoomType {
     public Boolean getBalcony_available() { return balcony_available; }
     public void setBalcony_available(Boolean balcony_available) { this.balcony_available = balcony_available; }
 
-    public BigDecimal getCost_per_night() { return cost_per_night; }
-    public void setCost_per_night(BigDecimal cost_per_night) { this.cost_per_night = cost_per_night; }
+    public int getCost_per_night() { return cost_per_night; }
+    public void setCost_per_night(int cost_per_night) { this.cost_per_night = cost_per_night; }
 
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }

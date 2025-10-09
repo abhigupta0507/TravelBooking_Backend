@@ -1,7 +1,7 @@
 package com.example.demo.model;
 
-import java.math.BigDecimal;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 public class HotelBooking {
 
@@ -10,10 +10,10 @@ public class HotelBooking {
     private Date check_out_date;
     private Integer no_of_rooms;
     private String room_type;
-    private Date booking_date;
+    private Timestamp booking_date;
     private Integer guest_count;
     private String status;
-    private BigDecimal cost;
+    private int cost;
     private Integer number_of_nights;
     private Integer hotel_id;
     private Integer room_id;
@@ -21,9 +21,23 @@ public class HotelBooking {
 
     public HotelBooking() {}
 
+    public HotelBooking(Date check_in_date, Date check_out_date, Integer no_of_rooms, String room_type, Integer guest_count, String status, int cost, Integer number_of_nights, Integer hotel_id, Integer room_id, Integer customer_id) {
+        this.check_in_date = check_in_date;
+        this.check_out_date = check_out_date;
+        this.no_of_rooms = no_of_rooms;
+        this.room_type = room_type;
+        this.guest_count = guest_count;
+        this.status = status;
+        this.cost = cost;
+        this.number_of_nights = number_of_nights;
+        this.hotel_id = hotel_id;
+        this.room_id = room_id;
+        this.customer_id = customer_id;
+    }
+
     public HotelBooking(Integer booking_id, Date check_in_date, Date check_out_date, Integer no_of_rooms,
-                        String room_type, Date booking_date, Integer guest_count, String status,
-                        BigDecimal cost, Integer number_of_nights, Integer hotel_id,
+                        String room_type, Timestamp booking_date, Integer guest_count, String status,
+                        int cost, Integer number_of_nights, Integer hotel_id,
                         Integer room_id, Integer customer_id) {
         this.booking_id = booking_id;
         this.check_in_date = check_in_date;
@@ -55,8 +69,8 @@ public class HotelBooking {
     public String getRoom_type() { return room_type; }
     public void setRoom_type(String room_type) { this.room_type = room_type; }
 
-    public Date getBooking_date() { return booking_date; }
-    public void setBooking_date(Date booking_date) { this.booking_date = booking_date; }
+    public Timestamp getBooking_date() { return booking_date; }
+    public void setBooking_date(Timestamp booking_date) { this.booking_date = booking_date; }
 
     public Integer getGuest_count() { return guest_count; }
     public void setGuest_count(Integer guest_count) { this.guest_count = guest_count; }
@@ -64,8 +78,8 @@ public class HotelBooking {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
-    public BigDecimal getCost() { return cost; }
-    public void setCost(BigDecimal cost) { this.cost = cost; }
+    public int getCost() { return cost; }
+    public void setCost(int cost) { this.cost = cost; }
 
     public Integer getNumber_of_nights() { return number_of_nights; }
     public void setNumber_of_nights(Integer number_of_nights) { this.number_of_nights = number_of_nights; }

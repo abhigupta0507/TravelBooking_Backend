@@ -21,7 +21,10 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/packages")
+<<<<<<< Updated upstream
 //@CrossOrigin("*")
+=======
+>>>>>>> Stashed changes
 public class PackageController {
 
     private PackageService packageService;
