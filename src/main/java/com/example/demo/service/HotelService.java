@@ -22,6 +22,10 @@ public class HotelService {
         return hotelDAO.findAllHotels();
     }
 
+    public List<Hotel> findHotelsByVendorId(Integer vendorId) {
+        return hotelDAO.findHotelByVendorId(vendorId);
+    }
+
     // 🔹 2. Fetch hotel by ID
     public Hotel findHotelById(int hotelId) {
         return hotelDAO.findHotelById(hotelId);
@@ -39,6 +43,8 @@ public class HotelService {
         newHotel.setRating(hotelDTO.getRating());
         newHotel.setTotal_rooms(hotelDTO.getTotalRooms());
         newHotel.setVendor_id(hotelDTO.getVendorId());
+        newHotel.setPrimary_email(hotelDTO.getPrimary_email());
+        newHotel.setPrimary_phone(hotelDTO.getPrimary_phone());
 
         // Insert hotel into DB via DAO
         Integer newHotelId = hotelDAO.createHotel(newHotel);
@@ -59,6 +65,10 @@ public class HotelService {
     // 🔹 5. Delete hotel by ID
     public boolean deleteHotelById(int hotelId) {
         return hotelDAO.deleteHotelById(hotelId);
+    }
+
+    public boolean deleteRoomById(int hotelId, int roomId) {
+        return hotelDAO.deleteRoomById(hotelId, roomId);
     }
 
     public List<RoomType> getRoomsByHotelId(Integer hotelId) {

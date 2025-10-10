@@ -40,6 +40,16 @@ public class HotelDAO {
         }
     }
 
+    public List<Hotel> findHotelByVendorId(Integer vendorId) {
+        String sql = "SELECT * FROM Hotel WHERE vendor_id = ?";
+        try{
+            return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToHotel(rs), vendorId);
+        }
+        catch (EmptyResultDataAccessException e){
+            return null;
+        }
+    }
+
     // 🔹 3. Fetch hotels by city
     public List<Hotel> findHotelsByCity(String city) {
         String sql = "SELECT * FROM Hotel WHERE city = ?";
@@ -90,8 +100,8 @@ public class HotelDAO {
 
     // 🔹 4. Insert new hotel
     public Integer createHotel(Hotel hotelData) {
-        String sql = "INSERT INTO Hotel (name, street, city, state, pin, rating, total_rooms, vendor_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Hotel (name, street, city, state, pin, rating, total_rooms, vendor_id, primary_email, primary_phone) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -105,6 +115,8 @@ public class HotelDAO {
             ps.setBigDecimal(6, hotelData.getRating());
             ps.setInt(7, hotelData.getTotal_rooms());
             ps.setInt(8, hotelData.getVendor_id());
+            ps.setString(9, hotelData.getPrimary_email());
+            ps.setString(10, hotelData.getPrimary_phone());
             return ps;
         }, keyHolder);
 
@@ -136,7 +148,9 @@ public class HotelDAO {
                 "pin = ?, " +
                 "rating = ?, " +
                 "total_rooms = ?, " +
-                "vendor_id = ? " +
+                "vendor_id = ?, " +
+                "primary_email = ?, " +
+                "primary_phone = ? " +
                 "WHERE hotel_id = ?";
 
         return jdbcTemplate.update(sql,
@@ -148,6 +162,8 @@ public class HotelDAO {
                 hotel.getRating(),
                 hotel.getTotal_rooms(),
                 hotel.getVendor_id(),
+                hotel.getPrimary_email(),
+                hotel.getPrimary_phone(),
                 hotel.getHotel_id());
     }
 
@@ -175,12 +191,24 @@ public class HotelDAO {
         hotel.setRating(rs.getBigDecimal("rating"));
         hotel.setTotal_rooms(rs.getInt("total_rooms"));
         hotel.setVendor_id(rs.getInt("vendor_id"));
+        hotel.setPrimary_email(rs.getString("primary_email"));
+        hotel.setPrimary_phone(rs.getString("primary_phone"));
         return hotel;
     }
 
     public String getRoomType(Integer hotelId, Integer roomId) {
         String sql="SELECT type FROM RoomType WHERE hotel_id=? AND room_id=?";
         return jdbcTemplate.queryForObject(sql,String.class,hotelId,roomId);
+    }
+
+    public boolean deleteHotelById(int hotelId){
+        String sql =  "DELETE FROM Hotel WHERE hotel_id = ?";
+        return  jdbcTemplate.update(sql,hotelId) > 0;
+    }
+
+    public boolean deleteRoomById(int hotelId, int roomId){
+        String sql = "DELETE FROM RoomType WHERE hotel_id=? AND room_id=?";
+        return  jdbcTemplate.update(sql,hotelId,roomId) > 0;
     }
 
     private static class RoomRowMapper implements RowMapper<RoomType> {

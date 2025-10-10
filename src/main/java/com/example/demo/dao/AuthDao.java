@@ -293,6 +293,11 @@ public class AuthDao {
         jdbcTemplate.update(sql,newStatus,vendorId);
     }
 
+    public String getVendorServiceType(int vendorId) {
+        String sql="SELECT service_type FROM Vendor where vendor_id=?";
+        return jdbcTemplate.queryForObject(sql,new Object[]{vendorId},String.class);
+    }
+
 
 //    public void deleteVendorById(int vendorId) {
 //        String sql="DELETE FROM Vendor WHERE vendor_id=?";

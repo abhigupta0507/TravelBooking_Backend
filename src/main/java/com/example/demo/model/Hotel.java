@@ -13,11 +13,13 @@ public class Hotel {
     private BigDecimal rating;
     private Integer total_rooms;
     private Integer vendor_id;
+    private String primary_phone;
+    private String primary_email;
 
     public Hotel() {}
 
     public Hotel(Integer hotel_id, String name, String street, String city, String state, String pin,
-                 BigDecimal rating, Integer total_rooms, Integer vendor_id) {
+                 BigDecimal rating, Integer total_rooms, Integer vendor_id, String primary_phone, String primary_email) {
         this.hotel_id = hotel_id;
         this.name = name;
         this.street = street;
@@ -27,6 +29,8 @@ public class Hotel {
         this.rating = rating;
         this.total_rooms = total_rooms;
         this.vendor_id = vendor_id;
+        this.primary_phone = primary_phone;
+        this.primary_email = primary_email;
     }
 
     public Integer getHotel_id() {
@@ -101,6 +105,11 @@ public class Hotel {
         this.vendor_id = vendor_id;
     }
 
+    public String getPrimary_phone() {return primary_phone;}
+    public String getPrimary_email() {return primary_email;}
+    public void setPrimary_phone(String primary_phone) {this.primary_phone = primary_phone;}
+    public void setPrimary_email(String primary_email) {this.primary_email = primary_email;}
+
     @Override
     public String toString() {
         return "Hotel{" +
@@ -113,6 +122,8 @@ public class Hotel {
                 ", rating=" + rating +
                 ", total_rooms=" + total_rooms +
                 ", vendor_id=" + vendor_id +
+                ", primary_phone='" + primary_phone + '\'' +
+                ", primary_email='" + primary_email + '\'' +
                 '}';
     }
 }

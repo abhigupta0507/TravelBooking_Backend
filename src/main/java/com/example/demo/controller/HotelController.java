@@ -30,6 +30,7 @@ public class HotelController {
         this.authService = authService;
     }
 
+    // To get all the hotels, can be called by anyone
     @GetMapping("/")
     public ResponseEntity<ApiResponse<List<Hotel>>> getAllHotels() {
         try {
@@ -56,6 +57,30 @@ public class HotelController {
         }
     }
 
+    @GetMapping("/vendor/{vendorId}")
+    public ResponseEntity<ApiResponse<List<Hotel>>> getHotelByVendorId(@PathVariable Integer vendorId) {
+        try{
+            List<Hotel> hotels = hotelService.findHotelsByVendorId(vendorId);
+            ApiResponse<List<Hotel>> response = new ApiResponse<>(
+                    true,
+                    "Successfully retrieved " + hotels.size() + " hotel(s).",
+                    hotels
+            );
+
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e){
+            ApiResponse<List<Hotel>> errorResponse = new ApiResponse<>(
+                    false,
+                    "An internal server error occurred.",
+                    null
+            );
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // gets hotel by ID, can be called by anyone
     @GetMapping("/{hotelId}/")
     public ResponseEntity<?> getHotelWithRooms(@PathVariable Integer hotelId) {
         try {
@@ -70,6 +95,7 @@ public class HotelController {
         }
     }
 
+    // creates hotel, can only be called by the Hotel_Provider
     @PostMapping("/")
     public ResponseEntity<?> createHotel(@RequestBody HotelDTO hotel, @RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -86,10 +112,15 @@ public class HotelController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to create hotels.");
             }
+            String serviceType = authService.getVendorServiceType(userId);
+            if(!Objects.equals(serviceType, "Hotel_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Hotel_Providers are allowed to create hotels.");
+            }
             hotel.setVendorId(userId);
 
             if (hotel.getCity() != null) {
-                hotel.setCity(hotel.getCity().toLowerCase());
+                hotel.setCity(hotel.getCity());
             }
             else{
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -101,7 +132,7 @@ public class HotelController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating hotel: " + e.getMessage());
         }
     }
-
+    // only Hotel_Provider can create rooms
     @PostMapping("/{hotelId}/rooms")
     public ResponseEntity<?> createRooms(@PathVariable Integer hotelId, @RequestBody List<RoomType> rooms, @RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -117,12 +148,17 @@ public class HotelController {
                         .body("Only vendors are allowed to create rooms.");
             }
 
+            // Checks if he is a Hotel Manager
+            String serviceType = authService.getVendorServiceType(vendorId);
+            if(!Objects.equals(serviceType, "Hotel_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Hotel_Providers are allowed to create rooms.");
+            }
+
             Integer hotelVendorId = hotelService.getVendorIdByHotelId(hotelId);
 
             // Step 2: Check ownership
             if (!Objects.equals(vendorId, hotelVendorId)) {
-                System.out.println(vendorId);
-                System.out.println(hotelVendorId);
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("You are not authorized to add rooms to this hotel.");
             }
@@ -137,7 +173,7 @@ public class HotelController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating rooms: " + e.getMessage());
         }
     }
-
+    // Update the hotel, only Hotel Manager can access it.
     @PutMapping("/{hotelId}/")
     public ResponseEntity<?> updateHotel(@PathVariable Integer hotelId, @RequestBody Hotel hotel, @RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -146,12 +182,28 @@ public class HotelController {
         try {
             String token = authHeader.substring(7);
             String userType = jwtUtil.getUserTypeFromToken(token);
-
+            Integer vendorId = jwtUtil.getUserIdFromToken(token);
+            // checks if the user is Vendor
             if (!Objects.equals(userType, "VENDOR")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to update hotels.");
             }
+            // checks if the user is Hotel_Provider
+            String serviceType = authService.getVendorServiceType(vendorId);
+            if(!Objects.equals(serviceType, "Hotel_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Hotel_Providers are allowed to update hotels.");
+            }
+            // checks if user actually manages the hotel
+            Integer hotelVendorId = hotelService.getVendorIdByHotelId(hotelId);
+
+            // Step 2: Check ownership
+            if (!Objects.equals(vendorId, hotelVendorId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You are not authorized to update hotels.");
+            }
             hotel.setHotel_id(hotelId); // Ensure hotelId is set
+            hotel.setVendor_id(vendorId);
             int updatedRows = hotelService.updateHotel(hotel);
             if (updatedRows > 0) {
                 return ResponseEntity.ok("Hotel updated successfully");
@@ -162,7 +214,7 @@ public class HotelController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating hotel: " + e.getMessage());
         }
     }
-
+    // To update the room of a hotel, only Hotel_Provider can access it.
     @PutMapping("/{hotelId}/room/{roomId}")
     public ResponseEntity<?> updateRoom(
             @PathVariable Integer hotelId,
@@ -178,12 +230,18 @@ public class HotelController {
             String token = authHeader.substring(7);
             String userType = jwtUtil.getUserTypeFromToken(token);
             Integer vendorIdFromToken = jwtUtil.getUserIdFromToken(token);
-
-            if (!"VENDOR".equalsIgnoreCase(userType)) {
+            String serviceType = authService.getVendorServiceType(vendorIdFromToken);
+            // checks if he is a Vendor
+            if (!Objects.equals(userType, "VENDOR")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to update rooms.");
             }
-
+            // checks if he is a Hotel_Provider
+            if(!Objects.equals(serviceType, "Hotel_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Hotel_Providers are allowed to update rooms.");
+            }
+            // checks if the Hotel_Provider actually owns the Hotel
             Integer vendorIdOfHotel = hotelService.getVendorIdByHotelId(hotelId);
             if (vendorIdOfHotel == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hotel not found");
@@ -193,7 +251,7 @@ public class HotelController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("You are not authorized to update rooms for this hotel");
             }
-
+            // checks whether the room actually exists or not
             boolean roomExists = hotelService.doesRoomBelongToHotel(hotelId, roomId);
             if (!roomExists) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -202,7 +260,7 @@ public class HotelController {
 
             updatedRoom.setHotel_id(hotelId);
             updatedRoom.setRoom_id(roomId);
-
+            // update the room
             boolean updated = hotelService.updateRoom(updatedRoom);
             if (!updated) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -216,7 +274,7 @@ public class HotelController {
                     .body("Error updating room: " + e.getMessage());
         }
     }
-
+    // To get the Hotels by city, can be called by anyone
     @GetMapping("/{city}")
     public ResponseEntity<?> getHotelsByCity(@PathVariable String city) {
         try {
@@ -227,6 +285,98 @@ public class HotelController {
             return ResponseEntity.ok(hotels);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching hotels: " + e.getMessage());
+        }
+    }
+
+    // To delete Hotel
+    @DeleteMapping("/{hotelId}")
+    public ResponseEntity<?> deleteHotel(@PathVariable Integer hotelId,
+                                         @RequestHeader("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token found");
+        }
+
+        try {
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            Integer vendorIdFromToken = jwtUtil.getUserIdFromToken(token);
+            String serviceType = authService.getVendorServiceType(vendorIdFromToken);
+            // checks if he is a Vendor
+            if (!Objects.equals(userType, "VENDOR")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only vendors are allowed to update rooms.");
+            }
+            // checks if he is a Hotel_Provider
+            if(!Objects.equals(serviceType, "Hotel_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Hotel_Providers are allowed to update rooms.");
+            }
+            // checks if the Hotel_Provider actually owns the Hotel
+            Integer vendorIdOfHotel = hotelService.getVendorIdByHotelId(hotelId);
+            if (vendorIdOfHotel == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hotel not found");
+            }
+
+            if (!vendorIdOfHotel.equals(vendorIdFromToken)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You are not authorized to delete this hotel");
+            }
+            hotelService.deleteHotelById(hotelId);
+
+            return ResponseEntity.ok("Hotel deleted successfully");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting room: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{hotelId}/room/{roomId}")
+    public ResponseEntity<?> deleteRoom(@PathVariable Integer hotelId,
+                                        @PathVariable Integer roomId,
+                                        @RequestHeader ("Authorization") String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token found");
+        }
+
+        try {
+            String token = authHeader.substring(7);
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            Integer vendorIdFromToken = jwtUtil.getUserIdFromToken(token);
+            String serviceType = authService.getVendorServiceType(vendorIdFromToken);
+            // checks if he is a Vendor
+            if (!Objects.equals(userType, "VENDOR")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only vendors are allowed to update rooms.");
+            }
+            // checks if he is a Hotel_Provider
+            if(!Objects.equals(serviceType, "Hotel_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Hotel_Providers are allowed to update rooms.");
+            }
+            // checks if the Hotel_Provider actually owns the Hotel
+            Integer vendorIdOfHotel = hotelService.getVendorIdByHotelId(hotelId);
+            if (vendorIdOfHotel == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hotel not found");
+            }
+
+            if (!vendorIdOfHotel.equals(vendorIdFromToken)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You are not authorized to update rooms for this hotel");
+            }
+            // checks whether the room actually exists or not
+            boolean roomExists = hotelService.doesRoomBelongToHotel(hotelId, roomId);
+            if (!roomExists) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Room does not belong to this hotel");
+            }
+            hotelService.deleteRoomById(hotelId, roomId);
+
+            return ResponseEntity.ok("Room deleted successfully");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting room: " + e.getMessage());
         }
     }
 }
