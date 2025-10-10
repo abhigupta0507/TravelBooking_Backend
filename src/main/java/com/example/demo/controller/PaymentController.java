@@ -1,7 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.model.Hotel;
+import com.example.demo.model.HotelBooking;
 import com.example.demo.model.Payment;
+import com.example.demo.model.RoomType;
+import com.example.demo.service.EmailService;
+import com.example.demo.service.HotelBookingService;
+import com.example.demo.service.HotelService;
 import com.example.demo.service.PaymentService;
 import com.example.demo.util.JwtUtil;
 import org.springframework.http.HttpStatus;
@@ -16,10 +22,16 @@ public class PaymentController {
 
     private PaymentService paymentService;
     private JwtUtil jwtUtil;
+    private EmailService emailService;
+    private HotelService hotelService;
+    private HotelBookingService hotelBookingService;
 
-    public PaymentController(PaymentService paymentService, JwtUtil jwtUtil) {
+    public PaymentController(PaymentService paymentService, HotelBookingService hotelBookingService,JwtUtil jwtUtil,HotelService hotelService, EmailService emailService) {
         this.paymentService = paymentService;
         this.jwtUtil = jwtUtil;
+        this.hotelBookingService=hotelBookingService;
+        this.hotelService=hotelService;
+        this.emailService=emailService;
     }
 
     @PostMapping("/confirm")
@@ -36,16 +48,42 @@ public class PaymentController {
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
-            //System.out.println("Reached this request...");
             Integer hotelBookingId = (Integer) paymentData.get("hotel_booking_id");
-            //System.out.println("Reached here Hotel Booking Id := "+hotelBookingId);
             String sessionId = (String) paymentData.get("session_id");
-            //System.out.println("Session Id : =" + sessionId);
             Double amount = ((Number) paymentData.get("amount")).doubleValue();
-            //System.out.println("amount:==  "+amount);
 
-            // Create payment and update booking
             Payment payment = paymentService.createHotelPayment(hotelBookingId, amount, sessionId);
+
+            HotelBooking theBooking = hotelBookingService.getHotelBooking(hotelBookingId);
+            Hotel theHotel = hotelService.findHotelById(theBooking.getHotel_id());
+            RoomType theRoom = hotelService.getRoomFromId(theBooking.getHotel_id(),theBooking.getRoom_id());
+
+            String email = jwtUtil.getEmailFromToken(token);
+            String subject = "Hotel Booking Confirmed";
+            String msgBody =
+                    "<html>" +
+                            "<body style='font-family: Arial, sans-serif; color: #333; line-height: 1.6;'>" +
+                            "<div style='max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px;'>" +
+                            "<h2 style='color: #2b6cb0; text-align: center;'>Booking Confirmation</h2>" +
+                            "<p>Dear Guest,</p>" +
+                            "<p>Your booking is <strong>confirmed</strong> at <strong>" + theHotel.getName() + "</strong>.</p>" +
+                            "<p>" +
+                            "<strong>Check-in:</strong> " + theBooking.getCheck_in_date() + "<br>" +
+                            "<strong>Check-out:</strong> " + theBooking.getCheck_out_date() + "<br>" +
+                            "<strong>Room Type:</strong> " + theRoom.getType() + "<br>" +
+                            "<strong>Number of Rooms:</strong> " + theBooking.getNo_of_rooms() + "<br>" +
+                            "<strong>Guests:</strong> " + theBooking.getGuest_count() +
+                            "</p>" +
+                            "<p>Your Booking ID: <strong>" + theBooking.getBooking_id() + "</strong>. Keep it for future reference.</p>" +
+                            "<hr style='border: none; border-top: 1px solid #ddd;'/>" +
+                            "<p style='text-align: center;'>Thank you for choosing <strong>TravelPro</strong>.<br>" +
+                            "We wish you a pleasant stay!</p>" +
+                            "</div>" +
+                            "</body>" +
+                            "</html>";
+
+            EmailDetails theEmail=new EmailDetails(email,msgBody,subject);
+            String status = emailService.sendSimpleMail(theEmail);
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Payment confirmed successfully", payment));
         } catch (Exception e) {

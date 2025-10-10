@@ -109,6 +109,15 @@ public class HotelService {
         return hotelDAO.getVendorIdByHotelId(hotelId);
     }
 
+
+    public RoomType getRoomFromId(int hotelId,int roomId){
+        try{
+            return hotelDAO.findRoomByHotelAndRoomId(hotelId,roomId);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
     public boolean updateRoom(RoomType room){
         int oldRoomCountInRoomType = hotelDAO.findRoomByHotelAndRoomId(room.getHotel_id(),room.getRoom_id()).getTotal_rooms();
         boolean flag =  hotelDAO.updateRoom(room);
