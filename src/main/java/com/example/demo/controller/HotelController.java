@@ -166,8 +166,10 @@ public class HotelController {
             // Step 3: Proceed to create room
             for (RoomType room : rooms) {
                 room.setHotel_id(hotelId);
+
                 hotelService.createRoom(room); // Use single-room method
             }
+
             return ResponseEntity.status(201).body("Rooms created successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating rooms: " + e.getMessage());

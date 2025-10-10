@@ -57,17 +57,28 @@ public class HotelService {
         return hotelDAO.findHotelById(newHotelId);
     }
 
-    // 🔹 4. Find all hotels by city
     public List<Hotel> findHotelsByCity(String city) {
         return hotelDAO.findHotelsByCity(city);
     }
 
+    public int countRoomsOfHotel(int hotelId){
+        try{
+            return hotelDAO.countTotalRoomsOfHotel(hotelId);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
     // 🔹 5. Delete hotel by ID
     public boolean deleteHotelById(int hotelId) {
         return hotelDAO.deleteHotelById(hotelId);
     }
 
     public boolean deleteRoomById(int hotelId, int roomId) {
+        int oldRoomCountInRoom= hotelDAO.findRoomByHotelAndRoomId(hotelId,roomId).getTotal_rooms();
+        int oldRoomCountInHotel = hotelDAO.findHotelById(hotelId).getTotal_rooms();
+        int newRoomCountForHotel= oldRoomCountInHotel-oldRoomCountInRoom;
+        hotelDAO.updateTotalRoomInHotel(hotelId,newRoomCountForHotel);
         return hotelDAO.deleteRoomById(hotelId, roomId);
     }
 
@@ -76,7 +87,14 @@ public class HotelService {
     }
 
     public void createRoom(RoomType room) {
+
         hotelDAO.insertRoom(room);
+        int hotelId=room.getHotel_id();
+        int oldRoomCount = hotelDAO.findHotelById(room.getHotel_id()).getTotal_rooms();
+        int roomsInRoom = room.getTotal_rooms();
+
+        int newRoomCount= oldRoomCount+roomsInRoom;
+        hotelDAO.updateTotalRoomInHotel(hotelId,newRoomCount);
     }
 
     public int updateHotel(Hotel hotel) {
@@ -92,7 +110,19 @@ public class HotelService {
     }
 
     public boolean updateRoom(RoomType room){
-        return hotelDAO.updateRoom(room);
+        int oldRoomCountInRoomType = hotelDAO.findRoomByHotelAndRoomId(room.getHotel_id(),room.getRoom_id()).getTotal_rooms();
+        boolean flag =  hotelDAO.updateRoom(room);
+        if(!flag){
+            return false;
+        }
+
+        int hotelId=room.getHotel_id();
+        int oldRoomCount = hotelDAO.findHotelById(room.getHotel_id()).getTotal_rooms();
+        int roomsInRoom = room.getTotal_rooms();
+
+        int newRoomCount= oldRoomCount-oldRoomCountInRoomType+roomsInRoom;
+        hotelDAO.updateTotalRoomInHotel(hotelId,newRoomCount);
+        return true;
     }
 
     public boolean doesRoomBelongToHotel(Integer hotelId, Integer roomId){
