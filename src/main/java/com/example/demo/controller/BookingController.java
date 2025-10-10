@@ -1,10 +1,13 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.ProductRequest;
+import com.example.demo.dto.StripeResponse;
 import com.example.demo.model.HotelBooking;
 import com.example.demo.model.User;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.HotelBookingService;
+import com.example.demo.service.StripeService;
 import com.example.demo.util.JwtUtil;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
@@ -19,11 +22,13 @@ public class BookingController {
     private AuthService authService;
     private JwtUtil jwtUtil;
     private HotelBookingService hotelBookingService;
+    private StripeService stripeService;
 
-    public BookingController(AuthService authService, JwtUtil jwtUtil, HotelBookingService hotelBookingService) {
+    public BookingController(AuthService authService, JwtUtil jwtUtil, HotelBookingService hotelBookingService,StripeService stripeService) {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
         this.hotelBookingService = hotelBookingService;
+        this.stripeService= stripeService;
     }
 
     //THIS ONE WILL REGISTER A HOTEL BOOKING WITH STATUS PENDING WAITING FOR PAYMENT. IF PAYMENT DONE FOR THIS BOOKING THEN
@@ -105,6 +110,14 @@ public class BookingController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         }
+    }
+
+    @PostMapping("/checkout")
+    public ResponseEntity<StripeResponse> checkoutProducts(@RequestBody ProductRequest productRequest) {
+        StripeResponse stripeResponse = stripeService.checkoutProducts(productRequest);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(stripeResponse);
     }
 
 }
