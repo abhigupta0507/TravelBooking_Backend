@@ -38,8 +38,10 @@ public class SupportTicketController {
         }
     }
 
+    // ... (no changes to getAllTickets, getCustomerTickets, getTicketDetails)
+
     @GetMapping("/tickets")
-    public ResponseEntity<?> getAllTicketsForStaff(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<?> getAllTickets(@RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7);
             if (!"STAFF".equalsIgnoreCase(jwtUtil.getUserTypeFromToken(token))) {
@@ -115,6 +117,8 @@ public class SupportTicketController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    // ... (no changes to updateTicketStatus or updateSatisfaction)
 
     @PutMapping("/tickets/{id}/status")
     public ResponseEntity<?> updateTicketStatus(@RequestHeader("Authorization") String authHeader, @PathVariable("id") Integer ticketId, @RequestBody Map<String, String> statusUpdate) {

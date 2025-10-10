@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -81,7 +80,7 @@ public class BookingController {
     // NO UPDATES ARE TO BE ENTERTAINED IN A HOTEL BOOKING DUE TO PAYMENT BEING DONE...
 
 
-    //GET ALL HOTEL BOOKINGS DONE BY LOGGED IN CUSTOMER (STATUS IS OPTIONAL, IF ENTERED -> MUST BE A PARAM)
+    //GET ALL HOTEL BOOKINGS DONE BY LOGGED IN CUSTOMER (STATUS IS OPTIONAL IF ENTERED MUST BE A PARAM)
     @GetMapping("/hotels/my")
     public ResponseEntity<ApiResponse<List<?>>> getAllHotelBookingsOfCustomer( @RequestHeader("Authorization") String authHeader,@RequestParam(name = "status", required = false) String status){
         try {
@@ -102,37 +101,6 @@ public class BookingController {
                 hotelBookingsDB= hotelBookingService.getHotelBookingsOfCustomerByStatus(userId,status);
             }
             return ResponseEntity.ok(new ApiResponse<>(true, "Successfully Fetched : Hotel Booking",hotelBookingsDB));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
-        }
-    }
-
-    @GetMapping("/hotels/my-hotel")
-    public ResponseEntity<ApiResponse<?>> getAllHotelBookingsOfHotel(@RequestHeader("Authorization") String authHeader){
-        try {
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
-            }
-
-            String token = authHeader.substring(7);
-            String userType = jwtUtil.getUserTypeFromToken(token);
-            Integer userId = jwtUtil.getUserIdFromToken(token);
-
-
-            if(!Objects.equals(userType, "VENDOR")){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false,"Not a vendor",null));
-            }
-
-            String serviceType= authService.getVendorById(userId).getService_type();
-            if(!Objects.equals(serviceType, "Hotel_Provider")){
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false,"Not a hotel provider",null));
-            }
-
-            List<HotelBooking> hotelBookingsDB = hotelBookingService.getAllHotelBookingsForVendor(userId);
-            return ResponseEntity.ok(new ApiResponse<>(true, "Successfully Fetched : Hotel Booking",hotelBookingsDB));
-
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, e.getMessage(), null));

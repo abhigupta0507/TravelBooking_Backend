@@ -10,12 +10,12 @@ public class RoomType {
     private String type;
     private String bed_type;
     private Integer max_capacity;
-    private Integer total_rooms;
+    private Integer number_of_rooms_available;
 
     public RoomType() {}
 
     public RoomType(Integer hotel_id, Integer room_id, Boolean balcony_available, int cost_per_night,
-                    String type, String bed_type, Integer max_capacity, Integer total_rooms) {
+                    String type, String bed_type, Integer max_capacity, Integer number_of_rooms_available) {
         this.hotel_id = hotel_id;
         this.room_id = room_id;
         this.balcony_available = balcony_available;
@@ -23,7 +23,7 @@ public class RoomType {
         this.type = type;
         this.bed_type = bed_type;
         this.max_capacity = max_capacity;
-        this.total_rooms = total_rooms;
+        this.number_of_rooms_available = number_of_rooms_available;
     }
 
     public Integer getHotel_id() { return hotel_id; }
@@ -47,8 +47,8 @@ public class RoomType {
     public Integer getMax_capacity() { return max_capacity; }
     public void setMax_capacity(Integer max_capacity) { this.max_capacity = max_capacity; }
 
-    public Integer getTotal_rooms() { return total_rooms; }
-    public void setTotal_rooms(Integer total_rooms) { this.total_rooms = total_rooms; }
+    public Integer getNumber_of_rooms_available() { return number_of_rooms_available; }
+    public void setNumber_of_rooms_available(Integer number_of_rooms_available) { this.number_of_rooms_available = number_of_rooms_available; }
 
     @Override
     public String toString() {
@@ -60,7 +60,7 @@ public class RoomType {
                 ", type='" + type + '\'' +
                 ", bed_type='" + bed_type + '\'' +
                 ", max_capacity=" + max_capacity +
-                ", total_rooms=" + total_rooms +
+                ", number_of_rooms_available=" + number_of_rooms_available +
                 '}';
     }
 }

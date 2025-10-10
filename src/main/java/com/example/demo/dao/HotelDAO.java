@@ -65,7 +65,7 @@ public class HotelDAO {
             type = ?, 
             bed_type = ?, 
             max_capacity = ?, 
-            total_rooms = ?
+            number_of_rooms_available = ?
         WHERE room_id = ? AND hotel_id = ?
     """;
 
@@ -75,7 +75,7 @@ public class HotelDAO {
                 room.getType(),
                 room.getBed_type(),
                 room.getMax_capacity(),
-                room.getTotal_rooms(),
+                room.getNumber_of_rooms_available(),
                 room.getRoom_id(),
                 room.getHotel_id());
 
@@ -113,7 +113,7 @@ public class HotelDAO {
     }
 
     public void insertRoom(RoomType room) {
-        String sql = "INSERT INTO RoomType (hotel_id, room_id, balcony_available, cost_per_night, type, bed_type, max_capacity, total_rooms) " +
+        String sql = "INSERT INTO RoomType (hotel_id, room_id, balcony_available, cost_per_night, type, bed_type, max_capacity, number_of_rooms_available) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
@@ -124,7 +124,7 @@ public class HotelDAO {
                 room.getType(),
                 room.getBed_type(),
                 room.getMax_capacity(),
-                room.getTotal_rooms());
+                room.getNumber_of_rooms_available());
     }
 
     public int updateHotelDetails(Hotel hotel) {
@@ -183,11 +183,6 @@ public class HotelDAO {
         return jdbcTemplate.queryForObject(sql,String.class,hotelId,roomId);
     }
 
-    public int getHotelIdFromVendorId(int vendorId) {
-        String sql="SELECT hotel_id FROM Hotel WHERE vendor_id = ?";
-        return jdbcTemplate.queryForObject(sql,Integer.class,vendorId);
-    }
-
     private static class RoomRowMapper implements RowMapper<RoomType> {
         @Override
         public RoomType mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -199,7 +194,7 @@ public class HotelDAO {
                     rs.getString("type"),
                     rs.getString("bed_type"),
                     rs.getInt("max_capacity"),
-                    rs.getInt("total_rooms")
+                    rs.getInt("number_of_rooms_available")
             );
         }
     }
