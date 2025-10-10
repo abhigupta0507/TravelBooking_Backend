@@ -96,16 +96,23 @@ public class SupportTicketController {
     public ResponseEntity<?> addResponse(@RequestHeader("Authorization") String authHeader, @PathVariable("id") Integer ticketId, @RequestBody TicketResponseDto dto) {
         try {
             String token = authHeader.substring(7);
-            if (!"STAFF".equalsIgnoreCase(jwtUtil.getUserTypeFromToken(token))) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only staff can respond to tickets.");
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
+
+            if ("STAFF".equalsIgnoreCase(userType)) {
+                // Existing logic for staff responses
+                supportTicketService.addResponse(dto, ticketId, userId);
+                return ResponseEntity.ok("Staff response added successfully.");
+
+            } else if ("CUSTOMER".equalsIgnoreCase(userType)) {
+                // New logic for customer responses
+                supportTicketService.addCustomerResponse(dto.getResponse_text(), ticketId, userId);
+                return ResponseEntity.ok("Your response has been added successfully.");
+
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to respond to tickets.");
             }
-            Integer staffId = jwtUtil.getUserIdFromToken(token);
 
-            // MODIFIED: The controller no longer needs to know about the staff member's name.
-            // The service layer now handles this lookup.
-            supportTicketService.addResponse(dto, ticketId, staffId);
-
-            return ResponseEntity.ok("Response added successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }

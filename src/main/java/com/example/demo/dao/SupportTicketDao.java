@@ -116,4 +116,10 @@ public class SupportTicketDao {
             return response;
         }
     }
+
+    public Integer addCustomerResponse(String responseText, Integer ticketId, String sender) {
+        String sql = "INSERT INTO Ticket_Response (sender, response_text, response_type, is_customer_visible, created_at, ticket_id, staff_id) " +
+                "VALUES (?, ?, 'CUSTOMER_REPLY', TRUE, ?, ?, NULL)";
+        return jdbcTemplate.update(sql, sender, responseText, Timestamp.valueOf(LocalDateTime.now()), ticketId);
+    }
 }
