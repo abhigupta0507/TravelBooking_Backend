@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class Payment {
-
     private Integer payment_id;
     private String booking_type;
     private Timestamp payment_datetime;
@@ -48,7 +47,9 @@ public class Payment {
     public void setStatus(String status) { this.status = status; }
 
     public String getTransaction_reference() { return transaction_reference; }
-    public void setTransaction_reference(String transaction_reference) { this.transaction_reference = transaction_reference; }
+    public void setTransaction_reference(String transaction_reference) {
+        this.transaction_reference = transaction_reference;
+    }
 
     public BigDecimal getRefund_amount() { return refund_amount; }
     public void setRefund_amount(BigDecimal refund_amount) { this.refund_amount = refund_amount; }
