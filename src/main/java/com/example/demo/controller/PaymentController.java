@@ -36,9 +36,13 @@ public class PaymentController {
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
+            //System.out.println("Reached this request...");
             Integer hotelBookingId = (Integer) paymentData.get("hotel_booking_id");
+            //System.out.println("Reached here Hotel Booking Id := "+hotelBookingId);
             String sessionId = (String) paymentData.get("session_id");
+            //System.out.println("Session Id : =" + sessionId);
             Double amount = ((Number) paymentData.get("amount")).doubleValue();
+            //System.out.println("amount:==  "+amount);
 
             // Create payment and update booking
             Payment payment = paymentService.createHotelPayment(hotelBookingId, amount, sessionId);

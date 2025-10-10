@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.HotelAvailabilityRequest;
 import com.example.demo.dto.ProductRequest;
 import com.example.demo.dto.StripeResponse;
 import com.example.demo.model.HotelBooking;
@@ -41,7 +42,7 @@ public class BookingController {
 
             Date checkIn = Date.valueOf((String) request.get("check_in_date"));
             Date checkOut = Date.valueOf((String) request.get("check_out_date"));
-            Integer noOfRooms = (Integer) request.get("no_of_rooms");
+            Integer noOfRooms = (Integer) request.get("required_rooms");
             Integer hotelId = (Integer) request.get("hotel_id");
             Integer roomId = (Integer) request.get("room_id");
 
@@ -150,4 +151,15 @@ public class BookingController {
         StripeResponse stripeResponse = stripeService.checkoutProducts(productRequest);
         return ResponseEntity.status(HttpStatus.OK).body(stripeResponse);
     }
+
+//    @PostMapping("/hotels/check-availability")
+//    public ResponseEntity<ApiResponse<?>> checkAvailabilityOfRoom(@RequestBody HotelAvailabilityRequest hotelAvailabilityRequest){
+//        try{
+//            boolean canBook= hotelBookingService.canBookForCheckDates(hotelAvailabilityRequest.getRequired_rooms(),hotelAvailabilityRequest.getCheck_in_date(),hotelAvailabilityRequest.getCheck_out_date(),hotelAvailabilityRequest.getHotel_id(),hotelAvailabilityRequest.getRoom_id());
+//            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse<>(true,"Here is your result",canBook));
+//        }
+//        catch (Exception e){
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Bad request",null));
+//        }
+//    }
 }

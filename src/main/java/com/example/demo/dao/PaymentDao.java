@@ -26,6 +26,7 @@ public class PaymentDao {
                 "status, transaction_reference, refund_amount) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        //System.out.println("transaction Reference (INSIDE DAO):: "+ transactionReference);
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);

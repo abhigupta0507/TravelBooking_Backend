@@ -82,7 +82,7 @@ public class HotelBookingDao {
     }
 
     public int getAllottedRoomCount(Integer hotelId, Integer roomId) {
-        String sql="SELECT number_of_rooms_available FROM RoomType WHERE hotel_id=? AND room_id=?  ";
+        String sql="SELECT total_rooms FROM RoomType WHERE hotel_id=? AND room_id=?  ";
         return jdbcTemplate.queryForObject(sql,Integer.class,hotelId,roomId);
     }
 
