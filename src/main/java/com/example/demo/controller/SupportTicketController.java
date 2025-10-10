@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.service.AuthService;
 import com.example.demo.dto.SupportTicketDto;
 import com.example.demo.dto.TicketResponseDto;
 import com.example.demo.model.SupportTicket;
@@ -18,6 +19,9 @@ import java.util.Map;
 public class SupportTicketController {
 
     @Autowired
+    private AuthService authService;
+
+    @Autowired
     private SupportTicketService supportTicketService;
 
     @Autowired
@@ -27,7 +31,9 @@ public class SupportTicketController {
     public ResponseEntity<?> createTicket(@RequestHeader("Authorization") String authHeader, @RequestBody SupportTicketDto dto) {
         try {
             String token = authHeader.substring(7);
-            if (!"CUSTOMER".equalsIgnoreCase(jwtUtil.getUserTypeFromToken(token))) {
+            String userType = jwtUtil.getUserTypeFromToken(token);
+
+            if (!"CUSTOMER".equalsIgnoreCase(userType)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only customers can create tickets.");
             }
             Integer customerId = jwtUtil.getUserIdFromToken(token);
@@ -44,9 +50,18 @@ public class SupportTicketController {
     public ResponseEntity<?> getAllTickets(@RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7);
-            if (!"STAFF".equalsIgnoreCase(jwtUtil.getUserTypeFromToken(token))) {
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
+
+            if (!"STAFF".equalsIgnoreCase(userType)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
             }
+
+            String role = authService.getStaffRole(userId);
+            if (!"CustomerCare".equalsIgnoreCase(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only Customer Care staff can view tickets.");
+            }
+
             List<SupportTicket> tickets = supportTicketService.getAllTicketsForStaff();
             return ResponseEntity.ok(tickets);
         } catch (Exception e) {
@@ -58,7 +73,10 @@ public class SupportTicketController {
     public ResponseEntity<?> getCustomerTickets(@RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7);
-            if (!"CUSTOMER".equalsIgnoreCase(jwtUtil.getUserTypeFromToken(token))) {
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
+
+            if (!"CUSTOMER".equalsIgnoreCase(userType)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
             }
             Integer customerId = jwtUtil.getUserIdFromToken(token);
@@ -76,11 +94,16 @@ public class SupportTicketController {
             String userType = jwtUtil.getUserTypeFromToken(token);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
-            if ("CUSTOMER".equalsIgnoreCase(userType)) {
+            if ("STAFF".equalsIgnoreCase(userType)) {
+                String role = authService.getStaffRole(userId);
+                if (!"CustomerCare".equalsIgnoreCase(role)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only Customer Care staff can view ticket details.");
+                }
+            } else if ("CUSTOMER".equalsIgnoreCase(userType)) {
                 if (!supportTicketService.isTicketOwner(ticketId, userId)) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not have permission to view this ticket.");
                 }
-            } else if (!"STAFF".equalsIgnoreCase(userType)) {
+            } else {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied.");
             }
 
@@ -101,6 +124,11 @@ public class SupportTicketController {
 
             if ("STAFF".equalsIgnoreCase(userType)) {
                 // Existing logic for staff responses
+                String role = authService.getStaffRole(userId);
+                if (!"CustomerCare".equalsIgnoreCase(role)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only Customer Care staff can respond to tickets.");
+                }
+
                 supportTicketService.addResponse(dto, ticketId, userId);
                 return ResponseEntity.ok("Staff response added successfully.");
 
@@ -124,7 +152,15 @@ public class SupportTicketController {
     public ResponseEntity<?> updateTicketStatus(@RequestHeader("Authorization") String authHeader, @PathVariable("id") Integer ticketId, @RequestBody Map<String, String> statusUpdate) {
         try {
             String token = authHeader.substring(7);
-            if (!"STAFF".equalsIgnoreCase(jwtUtil.getUserTypeFromToken(token))) {
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
+
+            if (!"STAFF".equalsIgnoreCase(userType)) {
+
+                String role = authService.getStaffRole(userId);
+                if (!"CustomerCare".equalsIgnoreCase(role)) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only Customer Care staff can update tickets.");
+                }
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only staff can update tickets.");
             }
             String status = statusUpdate.get("status");
@@ -140,7 +176,9 @@ public class SupportTicketController {
     public ResponseEntity<?> updateSatisfaction(@RequestHeader("Authorization") String authHeader, @PathVariable("id") Integer ticketId, @RequestBody Map<String, String> payload) {
         try {
             String token = authHeader.substring(7);
-            if (!"CUSTOMER".equalsIgnoreCase(jwtUtil.getUserTypeFromToken(token))) {
+            String userType = jwtUtil.getUserTypeFromToken(token);
+
+            if (!"CUSTOMER".equalsIgnoreCase(userType)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only customers can provide feedback.");
             }
             Integer customerId = jwtUtil.getUserIdFromToken(token);
