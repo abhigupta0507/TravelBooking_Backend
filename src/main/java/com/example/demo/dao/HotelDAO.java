@@ -65,7 +65,7 @@ public class HotelDAO {
             type = ?, 
             bed_type = ?, 
             max_capacity = ?, 
-            number_of_rooms_available = ?
+            total_rooms = ?
         WHERE room_id = ? AND hotel_id = ?
     """;
 
@@ -75,7 +75,7 @@ public class HotelDAO {
                 room.getType(),
                 room.getBed_type(),
                 room.getMax_capacity(),
-                room.getNumber_of_rooms_available(),
+                room.getTotal_rooms(),
                 room.getRoom_id(),
                 room.getHotel_id());
 
@@ -113,7 +113,7 @@ public class HotelDAO {
     }
 
     public void insertRoom(RoomType room) {
-        String sql = "INSERT INTO RoomType (hotel_id, room_id, balcony_available, cost_per_night, type, bed_type, max_capacity, number_of_rooms_available) " +
+        String sql = "INSERT INTO RoomType (hotel_id, room_id, balcony_available, cost_per_night, type, bed_type, max_capacity, total_rooms) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
@@ -124,7 +124,7 @@ public class HotelDAO {
                 room.getType(),
                 room.getBed_type(),
                 room.getMax_capacity(),
-                room.getNumber_of_rooms_available());
+                room.getTotal_rooms());
     }
 
     public int updateHotelDetails(Hotel hotel) {
@@ -194,7 +194,7 @@ public class HotelDAO {
                     rs.getString("type"),
                     rs.getString("bed_type"),
                     rs.getInt("max_capacity"),
-                    rs.getInt("number_of_rooms_available")
+                    rs.getInt("total_rooms")
             );
         }
     }
