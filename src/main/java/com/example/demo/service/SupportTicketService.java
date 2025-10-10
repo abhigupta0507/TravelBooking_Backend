@@ -38,6 +38,13 @@ public class SupportTicketService {
             throw new RuntimeException("Response text cannot be empty.");
         }
 
+        SupportTicket currentTicket = supportTicketDao.getTicketById(ticketId);
+
+        // ✨ ONLY change status to 'IN_PROGRESS' if it's the first staff reply (i.e., status is 'OPEN')
+        if ("OPEN".equalsIgnoreCase(currentTicket.getStatus())) {
+            supportTicketDao.updateTicketStatus(ticketId, "IN_PROGRESS", null);
+        }
+
         // Use the StaffDao to look up the name from the database
         Staff staff = authDao.findStaffById(staffId);
         String sender = staff.getFirst_name() + " (Staff)";
@@ -55,10 +62,8 @@ public class SupportTicketService {
         Customer customer = authDao.findCustomerById(customerId);
         String senderName = customer.getFirst_name() + " " + customer.getLast_name();
 
-        // 3. Update ticket status to show the customer has replied
-        supportTicketDao.updateTicketStatus(ticketId, "IN_PROGRESS", null);
 
-        // 4. Call the DAO to save the response
+        // 3. Call the DAO to save the response
         return supportTicketDao.addCustomerResponse(responseText, ticketId, senderName);
     }
 
