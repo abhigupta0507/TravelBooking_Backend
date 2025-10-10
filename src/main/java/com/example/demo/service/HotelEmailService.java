@@ -30,7 +30,7 @@ public class HotelEmailService {
         return count;
     }
 
-    public List<HotelEmail> getEmailsByHotel(Integer vendorId, Integer hotelId) {
+    public List<HotelEmail> getEmailsByHotel(Integer hotelId) {
         return hotelEmailDao.getEmailsByHotel(hotelId);
     }
 

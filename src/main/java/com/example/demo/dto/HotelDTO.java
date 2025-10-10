@@ -12,11 +12,13 @@ public class HotelDTO {
     private BigDecimal rating;
     private int totalRooms;
     private int vendorId;
+    private String primary_phone;
+    private String primary_email;
 
     public HotelDTO() {
     }
 
-    public HotelDTO(int hotelId, String name, String street, String city, String state, String pin, BigDecimal rating, int totalRooms, int vendorId) {
+    public HotelDTO(int hotelId, String name, String street, String city, String state, String pin, BigDecimal rating, int totalRooms, int vendorId,  String primary_phone, String primary_email) {
         this.hotelId = hotelId;
         this.name = name;
         this.street = street;
@@ -26,6 +28,8 @@ public class HotelDTO {
         this.rating = rating;
         this.totalRooms = totalRooms;
         this.vendorId = vendorId;
+        this.primary_phone = primary_phone;
+        this.primary_email = primary_email;
     }
 
     public int getHotelId() {
@@ -100,6 +104,11 @@ public class HotelDTO {
         this.vendorId = vendorId;
     }
 
+    public String getPrimary_phone() {return primary_phone;}
+    public String getPrimary_email() {return primary_email;}
+    public void setPrimary_phone(String primary_phone) {this.primary_phone = primary_phone;}
+    public void setPrimary_email(String primary_email) {this.primary_email = primary_email;}
+
     @Override
     public String toString() {
         return "HotelDTO{" +
@@ -112,6 +121,8 @@ public class HotelDTO {
                 ", rating=" + rating +
                 ", totalRooms=" + totalRooms +
                 ", vendorId=" + vendorId +
+                ", primary_phone='" + primary_phone + '\'' +
+                ", primary_email='" + primary_email + '\'' +
                 '}';
     }
 }

@@ -389,6 +389,15 @@ public class AuthService {
             throw new RuntimeException(e);
         }
     }
+
+    public String getVendorServiceType(int vendorId) {
+        try{
+            return authDao.getVendorServiceType(vendorId);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
     //instead of deleting a vendor we will allow vendor to change his status only.
 //    public void deleteVendor(int vendorId) {
 //        authDao.deleteVendorById(vendorId);
