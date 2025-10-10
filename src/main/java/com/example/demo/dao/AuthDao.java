@@ -100,19 +100,6 @@ public class AuthDao {
         return jdbcTemplate.queryForObject(sql,new StaffRowMapper(),profileId);
     }
 
-    public String findStaffNameById(Integer staffId) {
-        String sql = "SELECT first_name, last_name FROM Staff WHERE staff_id = ?";
-        try {
-            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> {
-                String firstName = rs.getString("first_name");
-                String lastName = rs.getString("last_name");
-                return firstName + " " + lastName;
-            }, staffId);
-        } catch (EmptyResultDataAccessException e) {
-            // Return a sensible default if the staff member is not found
-            return "No Staff Member Found with this id";
-        }
-    }
 
     public Integer createCustomer(String firstName, String lastName, String email, String password, String phone,
                                   String dateOfBirth, String gender, String emergencyContactFirstName,

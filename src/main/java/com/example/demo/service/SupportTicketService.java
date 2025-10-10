@@ -1,5 +1,8 @@
 package com.example.demo.service;
 
+import com.example.demo.service.AuthService;
+import com.example.demo.model.Customer;
+import com.example.demo.model.Staff;
 import com.example.demo.dao.AuthDao; // Import the new DAO
 import com.example.demo.dao.SupportTicketDao;
 import com.example.demo.dto.SupportTicketDto;
@@ -35,11 +38,33 @@ public class SupportTicketService {
             throw new RuntimeException("Response text cannot be empty.");
         }
 
+        SupportTicket currentTicket = supportTicketDao.getTicketById(ticketId);
+
+        // ✨ ONLY change status to 'IN_PROGRESS' if it's the first staff reply (i.e., status is 'OPEN')
+        if ("OPEN".equalsIgnoreCase(currentTicket.getStatus())) {
+            supportTicketDao.updateTicketStatus(ticketId, "IN_PROGRESS", null);
+        }
+
         // Use the StaffDao to look up the name from the database
-        String staffName = authDao.findStaffNameById(staffId);
-        String sender = staffName + " (Staff)";
+        Staff staff = authDao.findStaffById(staffId);
+        String sender = staff.getFirst_name() + " (Staff)";
 
         return supportTicketDao.addResponse(dto, ticketId, staffId, sender);
+    }
+
+    public Integer addCustomerResponse(String responseText, Integer ticketId, Integer customerId) {
+        // 1. Verify the customer owns the ticket
+        if (!isTicketOwner(ticketId, customerId)) {
+            throw new RuntimeException("You are not authorized to respond to this ticket.");
+        }
+
+        // 2. Get the customer's name to use as the 'sender'
+        Customer customer = authDao.findCustomerById(customerId);
+        String senderName = customer.getFirst_name() + " " + customer.getLast_name();
+
+
+        // 3. Call the DAO to save the response
+        return supportTicketDao.addCustomerResponse(responseText, ticketId, senderName);
     }
 
     public SupportTicket getTicketById(Integer ticketId) {
