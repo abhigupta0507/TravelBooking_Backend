@@ -183,6 +183,11 @@ public class HotelDAO {
         return jdbcTemplate.queryForObject(sql,String.class,hotelId,roomId);
     }
 
+    public int getHotelIdFromVendorId(int vendorId) {
+        String sql="SELECT hotel_id FROM Hotel WHERE vendor_id = ?";
+        return jdbcTemplate.queryForObject(sql,Integer.class,vendorId);
+    }
+
     private static class RoomRowMapper implements RowMapper<RoomType> {
         @Override
         public RoomType mapRow(ResultSet rs, int rowNum) throws SQLException {

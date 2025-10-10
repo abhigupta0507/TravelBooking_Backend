@@ -79,6 +79,16 @@ public class HotelBookingService {
         }
     }
 
+    public List<HotelBooking> getAllHotelBookingsForVendor(int vendorId){
+        try{
+            int hotelId = hotelDao.getHotelIdFromVendorId(vendorId);
+            return hotelBookingDao.getAllHotelBookingsOfHotel(hotelId);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
     public boolean canBookForCheckDates(Integer noOfRooms, Date checkInDate, Date checkOutDate, Integer hotelId, Integer roomId) {
         try{
             int bookedRoomCount = hotelBookingDao.getCountOfBookedRoomsByCheckDates(checkInDate,checkOutDate,roomId,hotelId);
