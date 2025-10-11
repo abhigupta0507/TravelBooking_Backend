@@ -5,6 +5,7 @@ import com.example.demo.dto.HotelAvailabilityRequest;
 import com.example.demo.dto.ProductRequest;
 import com.example.demo.dto.StripeResponse;
 import com.example.demo.model.HotelBooking;
+import com.example.demo.model.RoomType;
 import com.example.demo.service.HotelBookingService;
 import com.example.demo.service.StripeService;
 import com.example.demo.util.JwtUtil;
@@ -75,6 +76,19 @@ public class BookingController {
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
+            // the room for which booking is done
+            RoomType room = hotelBookingService.hotelDao.findRoomByHotelAndRoomId(hotelBooking.getHotel_id(),hotelBooking.getRoom_id());
+
+            //Check to prevent overcrowding of guest in asked number of rooms
+            int guestCount= hotelBooking.getGuest_count();
+            int maxCapacityPerRoom = room.getMax_capacity();
+            int noOfRoomsRequired= hotelBooking.getNo_of_rooms();
+
+            if(maxCapacityPerRoom*noOfRoomsRequired<guestCount){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Guest count is more than allowed!",null));
+            }
+
+            //A backend check for availability of rooms for requested check-in and check-out dates.
             boolean canBook = hotelBookingService.canBookForCheckDates(
                     hotelBooking.getNo_of_rooms(),
                     hotelBooking.getCheck_in_date(),
@@ -88,6 +102,7 @@ public class BookingController {
                         .body(new ApiResponse<>(false, "Not enough rooms to allocate this booking", null));
             }
 
+            //create the booking now as all cases passed.
             int hotelBookingId = hotelBookingService.createHotelBooking(hotelBooking, userId);
             HotelBooking hotelBookingDB = hotelBookingService.getHotelBooking(hotelBookingId);
 
@@ -108,8 +123,16 @@ public class BookingController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
             }
+            String token = authHeader.substring(7);
+            int userId= jwtUtil.getUserIdFromToken(token);
 
             HotelBooking hotelBookingDB = hotelBookingService.getHotelBooking(bookingId);
+
+            //check to ensure booking belongs to logged-in user.
+            if(userId==hotelBookingDB.getCustomer_id()){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse<>(false,"This booking doesn't belong to you",null));
+            }
+
             return ResponseEntity.ok(new ApiResponse<>(true, "Successfully fetched booking", hotelBookingDB));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -152,14 +175,5 @@ public class BookingController {
         return ResponseEntity.status(HttpStatus.OK).body(stripeResponse);
     }
 
-//    @PostMapping("/hotels/check-availability")
-//    public ResponseEntity<ApiResponse<?>> checkAvailabilityOfRoom(@RequestBody HotelAvailabilityRequest hotelAvailabilityRequest){
-//        try{
-//            boolean canBook= hotelBookingService.canBookForCheckDates(hotelAvailabilityRequest.getRequired_rooms(),hotelAvailabilityRequest.getCheck_in_date(),hotelAvailabilityRequest.getCheck_out_date(),hotelAvailabilityRequest.getHotel_id(),hotelAvailabilityRequest.getRoom_id());
-//            return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse<>(true,"Here is your result",canBook));
-//        }
-//        catch (Exception e){
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Bad request",null));
-//        }
-//    }
+
 }
