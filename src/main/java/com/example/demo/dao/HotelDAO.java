@@ -102,8 +102,8 @@ public class HotelDAO {
 
     // 🔹 4. Insert new hotel
     public Integer createHotel(Hotel hotelData) {
-        String sql = "INSERT INTO Hotel (name, street, city, state, pin, rating, total_rooms, vendor_id, primary_email, primary_phone) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Hotel (name, street, city, state, pin, rating, total_rooms, vendor_id, primary_email, primary_phone, image_url) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -119,6 +119,7 @@ public class HotelDAO {
             ps.setInt(8, hotelData.getVendor_id());
             ps.setString(9, hotelData.getPrimary_email());
             ps.setString(10, hotelData.getPrimary_phone());
+            ps.setString(11, hotelData.getImage_url());
             return ps;
         }, keyHolder);
 
@@ -158,7 +159,8 @@ public class HotelDAO {
                 "total_rooms = ?, " +
                 "vendor_id = ?, " +
                 "primary_email = ?, " +
-                "primary_phone = ? " +
+                "primary_phone = ? ," +
+                "image_url = ? " +
                 "WHERE hotel_id = ?";
 
         return jdbcTemplate.update(sql,
@@ -172,6 +174,7 @@ public class HotelDAO {
                 hotel.getVendor_id(),
                 hotel.getPrimary_email(),
                 hotel.getPrimary_phone(),
+                hotel.getImage_url(),
                 hotel.getHotel_id());
     }
 
@@ -201,6 +204,7 @@ public class HotelDAO {
         hotel.setVendor_id(rs.getInt("vendor_id"));
         hotel.setPrimary_email(rs.getString("primary_email"));
         hotel.setPrimary_phone(rs.getString("primary_phone"));
+        hotel.setImage_url(rs.getString("image_url"));
         return hotel;
     }
 
