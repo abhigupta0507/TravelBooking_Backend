@@ -41,11 +41,12 @@ public class HotelService {
         newHotel.setState(hotelDTO.getState());
         newHotel.setPin(hotelDTO.getPin());
         newHotel.setRating(hotelDTO.getRating());
-        newHotel.setTotal_rooms(hotelDTO.getTotalRooms());
+        newHotel.setTotal_rooms(0);
         newHotel.setVendor_id(hotelDTO.getVendorId());
         newHotel.setPrimary_email(hotelDTO.getPrimary_email());
         newHotel.setPrimary_phone(hotelDTO.getPrimary_phone());
 
+        newHotel.setImage_url(hotelDTO.getImage_url());
         // Insert hotel into DB via DAO
         Integer newHotelId = hotelDAO.createHotel(newHotel);
 

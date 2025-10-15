@@ -64,6 +64,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(@RequestBody RefreshTokenRequest request) {
         try {
             AuthResponse response = authService.refreshToken(request.getRefreshToken());
+            System.out.println("Refreshed token");
             return ResponseEntity.ok(new ApiResponse<>(true, "Token refreshed successfully", response));
         } catch (Exception e) {
             return ResponseEntity.badRequest()

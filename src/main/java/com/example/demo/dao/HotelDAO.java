@@ -156,7 +156,6 @@ public class HotelDAO {
                 "state = ?, " +
                 "pin = ?, " +
                 "rating = ?, " +
-                "total_rooms = ?, " +
                 "vendor_id = ?, " +
                 "primary_email = ?, " +
                 "primary_phone = ? ," +
@@ -170,7 +169,7 @@ public class HotelDAO {
                 hotel.getState(),
                 hotel.getPin(),
                 hotel.getRating(),
-                hotel.getTotal_rooms(),
+                //hotel.getTotal_rooms(),
                 hotel.getVendor_id(),
                 hotel.getPrimary_email(),
                 hotel.getPrimary_phone(),
