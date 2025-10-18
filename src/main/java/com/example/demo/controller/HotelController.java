@@ -29,33 +29,45 @@ public class HotelController {
         this.jwtUtil = jwtUtil;
         this.authService = authService;
     }
-
-    // To get all the hotels, can be called by anyone
     @GetMapping("/")
-    public ResponseEntity<ApiResponse<List<Hotel>>> getAllHotels() {
+    public ResponseEntity<?> getAllHotels(@RequestParam(required = false) String city) {
         try {
-            // Call the service layer to get all hotels
+            if (city != null && !city.isBlank()) {
+                List<Hotel> hotels = hotelService.findHotelsByCity(city);
+                if (hotels.isEmpty()) {
+                    ApiResponse<List<Hotel>> notFound = new ApiResponse<>(
+                            false,
+                            "No hotels found in city: " + city,
+                            null
+                    );
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFound);
+                }
+                ApiResponse<List<Hotel>> okByCity = new ApiResponse<>(
+                        true,
+                        "Successfully retrieved " + hotels.size() + " hotel(s) in " + city + ".",
+                        hotels
+                );
+                return ResponseEntity.ok(okByCity);
+            }
+
             List<Hotel> hotels = hotelService.findAllHotels();
-            // Build a success response
             ApiResponse<List<Hotel>> response = new ApiResponse<>(
                     true,
                     "Successfully retrieved " + hotels.size() + " hotel(s).",
                     hotels
             );
-
-            return ResponseEntity.ok(response);  // HTTP 200 OK
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            // Handle any unexpected exceptions
             ApiResponse<List<Hotel>> errorResponse = new ApiResponse<>(
                     false,
                     "An internal server error occurred.",
                     null
             );
-
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
 
     @GetMapping("/vendor/{vendorId}")
     public ResponseEntity<ApiResponse<List<Hotel>>> getHotelByVendorId(@PathVariable Integer vendorId) {
@@ -277,18 +289,22 @@ public class HotelController {
         }
     }
     // To get the Hotels by city, can be called by anyone
-    @GetMapping("/{city}")
-    public ResponseEntity<?> getHotelsByCity(@PathVariable String city) {
-        try {
-            List<Hotel> hotels = hotelService.getHotelsByCity(city);
-            if (hotels.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No hotels found in city: " + city);
-            }
-            return ResponseEntity.ok(hotels);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching hotels: " + e.getMessage());
-        }
-    }
+//    @GetMapping("/")
+//    public ResponseEntity<?> getHotelsByCity(@RequestParam String city) {
+//        try {
+//            System.out.println(city);
+//            List<Hotel> hotels = hotelService.getHotelsByCity(city);
+//            if (hotels.isEmpty()) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                        .body("No hotels found in city: " + city);
+//            }
+//            return ResponseEntity.ok(hotels);
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                    .body("Error fetching hotels: " + e.getMessage());
+//        }
+//    }
+
 
     // To delete Hotel
     @DeleteMapping("/{hotelId}")
