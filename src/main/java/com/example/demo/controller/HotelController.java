@@ -7,52 +7,67 @@ import com.example.demo.model.Hotel;
 import com.example.demo.model.RoomType;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.HotelService;
+import com.example.demo.service.ImageService;
 import com.example.demo.util.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/hotels")
-//@CrossOrigin("*")
 public class HotelController {
 
     private HotelService hotelService;
     private JwtUtil jwtUtil;
     private AuthService authService;
+    private ImageService imageService;
 
-    public HotelController(HotelService hotelService, JwtUtil jwtUtil, AuthService authService) {
+    public HotelController(HotelService hotelService, JwtUtil jwtUtil, AuthService authService, ImageService imageService) {
         this.hotelService = hotelService;
         this.jwtUtil = jwtUtil;
         this.authService = authService;
+        this.imageService = imageService;
     }
 
-    // To get all the hotels, can be called by anyone
     @GetMapping("/")
-    public ResponseEntity<ApiResponse<List<Hotel>>> getAllHotels() {
+    public ResponseEntity<?> getAllHotels(@RequestParam(required = false) String city) {
         try {
-            // Call the service layer to get all hotels
+            if (city != null && !city.isBlank()) {
+                List<Hotel> hotels = hotelService.findHotelsByCity(city);
+                if (hotels.isEmpty()) {
+                    ApiResponse<List<Hotel>> notFound = new ApiResponse<>(
+                            false,
+                            "No hotels found in city: " + city,
+                            null
+                    );
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFound);
+                }
+                ApiResponse<List<Hotel>> okByCity = new ApiResponse<>(
+                        true,
+                        "Successfully retrieved " + hotels.size() + " hotel(s) in " + city + ".",
+                        hotels
+                );
+                return ResponseEntity.ok(okByCity);
+            }
+
             List<Hotel> hotels = hotelService.findAllHotels();
-            // Build a success response
             ApiResponse<List<Hotel>> response = new ApiResponse<>(
                     true,
                     "Successfully retrieved " + hotels.size() + " hotel(s).",
                     hotels
             );
-
-            return ResponseEntity.ok(response);  // HTTP 200 OK
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            // Handle any unexpected exceptions
             ApiResponse<List<Hotel>> errorResponse = new ApiResponse<>(
                     false,
                     "An internal server error occurred.",
                     null
             );
-
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -80,7 +95,6 @@ public class HotelController {
         }
     }
 
-    // gets hotel by ID, can be called by anyone
     @GetMapping("/{hotelId}/")
     public ResponseEntity<?> getHotelWithRooms(@PathVariable Integer hotelId) {
         try {
@@ -95,44 +109,70 @@ public class HotelController {
         }
     }
 
-    // creates hotel, can only be called by the Hotel_Provider
-    @PostMapping("/")
-    public ResponseEntity<?> createHotel(@RequestBody HotelDTO hotel, @RequestHeader("Authorization") String authHeader) {
+    // NEW: Create hotel with image upload
+    @PostMapping(value = "/", consumes = "multipart/form-data")
+    public ResponseEntity<?> createHotel(
+            @RequestParam("name") String name,
+            @RequestParam("street") String street,
+            @RequestParam("city") String city,
+            @RequestParam("state") String state,
+            @RequestParam("pin") String pin,
+            @RequestParam("primary_email") String primaryEmail,
+            @RequestParam("primary_phone") String primaryPhone,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestHeader("Authorization") String authHeader) {
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token found");
         }
+
         try {
             String token = authHeader.substring(7);
             String userType = jwtUtil.getUserTypeFromToken(token);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
-
-            // ✅ Only vendors can create hotels
             if (!Objects.equals(userType, "VENDOR")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to create hotels.");
             }
+
             String serviceType = authService.getVendorServiceType(userId);
             if(!Objects.equals(serviceType, "Hotel_Provider")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only Hotel_Providers are allowed to create hotels.");
             }
-            hotel.setVendorId(userId);
 
-            if (hotel.getCity() != null) {
-                hotel.setCity(hotel.getCity());
+            // Upload image if provided
+            String imageUrl = "";
+            if (image != null && !image.isEmpty()) {
+                imageUrl = imageService.upload(image);
+                if (imageUrl.contains("couldn't upload")) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Failed to upload image");
+                }
             }
-            else{
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("A city is needed for any hotel");
-            }
-            Hotel createdHotel = hotelService.createHotel(hotel);
+
+            // Create HotelDTO
+            HotelDTO hotelDTO = new HotelDTO();
+            hotelDTO.setName(name);
+            hotelDTO.setStreet(street);
+            hotelDTO.setCity(city);
+            hotelDTO.setState(state);
+            hotelDTO.setPin(pin);
+            hotelDTO.setPrimary_email(primaryEmail);
+            hotelDTO.setPrimary_phone(primaryPhone);
+            hotelDTO.setImage_url(imageUrl);
+            hotelDTO.setVendorId(userId);
+
+            Hotel createdHotel = hotelService.createHotel(hotelDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdHotel);
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating hotel: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating hotel: " + e.getMessage());
         }
     }
-    // only Hotel_Provider can create rooms
+
     @PostMapping("/{hotelId}/rooms")
     public ResponseEntity<?> createRooms(@PathVariable Integer hotelId, @RequestBody List<RoomType> rooms, @RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -148,7 +188,6 @@ public class HotelController {
                         .body("Only vendors are allowed to create rooms.");
             }
 
-            // Checks if he is a Hotel Manager
             String serviceType = authService.getVendorServiceType(vendorId);
             if(!Objects.equals(serviceType, "Hotel_Provider")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -157,17 +196,14 @@ public class HotelController {
 
             Integer hotelVendorId = hotelService.getVendorIdByHotelId(hotelId);
 
-            // Step 2: Check ownership
             if (!Objects.equals(vendorId, hotelVendorId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("You are not authorized to add rooms to this hotel.");
             }
 
-            // Step 3: Proceed to create room
             for (RoomType room : rooms) {
                 room.setHotel_id(hotelId);
-
-                hotelService.createRoom(room); // Use single-room method
+                hotelService.createRoom(room);
             }
 
             return ResponseEntity.status(201).body("Rooms created successfully");
@@ -175,37 +211,91 @@ public class HotelController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating rooms: " + e.getMessage());
         }
     }
-    // Update the hotel, only Hotel Manager can access it.
-    @PutMapping("/{hotelId}/")
-    public ResponseEntity<?> updateHotel(@PathVariable Integer hotelId, @RequestBody Hotel hotel, @RequestHeader("Authorization") String authHeader) {
+
+    @GetMapping("/autocomplete/cities")
+    public ResponseEntity<ApiResponse<List<String>>> autocompleteCities(@RequestParam String q) {
+        try {
+            List<String> suggestions = hotelService.autocompleteCities(q);
+            ApiResponse<List<String>> response = new ApiResponse<>(
+                    true,
+                    "City suggestions retrieved successfully.",
+                    suggestions
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<List<String>> errorResponse = new ApiResponse<>(
+                    false,
+                    "Error fetching city suggestions.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // NEW: Update hotel with optional image upload
+    @PutMapping(value = "/{hotelId}/", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateHotel(
+            @PathVariable Integer hotelId,
+            @RequestParam("name") String name,
+            @RequestParam("street") String street,
+            @RequestParam("city") String city,
+            @RequestParam("state") String state,
+            @RequestParam("pin") String pin,
+            @RequestParam("primary_email") String primaryEmail,
+            @RequestParam("primary_phone") String primaryPhone,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "existing_image_url", required = false) String existingImageUrl,
+            @RequestHeader("Authorization") String authHeader) {
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No token found");
         }
+
         try {
             String token = authHeader.substring(7);
             String userType = jwtUtil.getUserTypeFromToken(token);
             Integer vendorId = jwtUtil.getUserIdFromToken(token);
-            // checks if the user is Vendor
+
             if (!Objects.equals(userType, "VENDOR")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to update hotels.");
             }
-            // checks if the user is Hotel_Provider
+
             String serviceType = authService.getVendorServiceType(vendorId);
             if(!Objects.equals(serviceType, "Hotel_Provider")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only Hotel_Providers are allowed to update hotels.");
             }
-            // checks if user actually manages the hotel
-            Integer hotelVendorId = hotelService.getVendorIdByHotelId(hotelId);
 
-            // Step 2: Check ownership
+            Integer hotelVendorId = hotelService.getVendorIdByHotelId(hotelId);
             if (!Objects.equals(vendorId, hotelVendorId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("You are not authorized to update hotels.");
             }
-            hotel.setHotel_id(hotelId); // Ensure hotelId is set
+
+            // Handle image upload
+            String imageUrl = existingImageUrl != null ? existingImageUrl : "";
+            if (image != null && !image.isEmpty()) {
+                imageUrl = imageService.upload(image);
+                if (imageUrl.contains("couldn't upload")) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Failed to upload image");
+                }
+            }
+
+            // Create Hotel object
+            Hotel hotel = new Hotel();
+            hotel.setHotel_id(hotelId);
+            hotel.setName(name);
+            hotel.setStreet(street);
+            hotel.setCity(city);
+            hotel.setState(state);
+            hotel.setPin(pin);
+            hotel.setPrimary_email(primaryEmail);
+            hotel.setPrimary_phone(primaryPhone);
+            hotel.setImage_url(imageUrl);
             hotel.setVendor_id(vendorId);
+
             int updatedRows = hotelService.updateHotel(hotel);
             if (updatedRows > 0) {
                 return ResponseEntity.ok("Hotel updated successfully");
@@ -213,10 +303,11 @@ public class HotelController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hotel not found");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating hotel: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating hotel: " + e.getMessage());
         }
     }
-    // To update the room of a hotel, only Hotel_Provider can access it.
+
     @PutMapping("/{hotelId}/room/{roomId}")
     public ResponseEntity<?> updateRoom(
             @PathVariable Integer hotelId,
@@ -233,17 +324,17 @@ public class HotelController {
             String userType = jwtUtil.getUserTypeFromToken(token);
             Integer vendorIdFromToken = jwtUtil.getUserIdFromToken(token);
             String serviceType = authService.getVendorServiceType(vendorIdFromToken);
-            // checks if he is a Vendor
+
             if (!Objects.equals(userType, "VENDOR")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to update rooms.");
             }
-            // checks if he is a Hotel_Provider
+
             if(!Objects.equals(serviceType, "Hotel_Provider")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only Hotel_Providers are allowed to update rooms.");
             }
-            // checks if the Hotel_Provider actually owns the Hotel
+
             Integer vendorIdOfHotel = hotelService.getVendorIdByHotelId(hotelId);
             if (vendorIdOfHotel == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hotel not found");
@@ -253,7 +344,7 @@ public class HotelController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("You are not authorized to update rooms for this hotel");
             }
-            // checks whether the room actually exists or not
+
             boolean roomExists = hotelService.doesRoomBelongToHotel(hotelId, roomId);
             if (!roomExists) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -262,7 +353,7 @@ public class HotelController {
 
             updatedRoom.setHotel_id(hotelId);
             updatedRoom.setRoom_id(roomId);
-            // update the room
+
             boolean updated = hotelService.updateRoom(updatedRoom);
             if (!updated) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -276,21 +367,7 @@ public class HotelController {
                     .body("Error updating room: " + e.getMessage());
         }
     }
-    // To get the Hotels by city, can be called by anyone
-    @GetMapping("/{city}")
-    public ResponseEntity<?> getHotelsByCity(@PathVariable String city) {
-        try {
-            List<Hotel> hotels = hotelService.getHotelsByCity(city);
-            if (hotels.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No hotels found in city: " + city);
-            }
-            return ResponseEntity.ok(hotels);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error fetching hotels: " + e.getMessage());
-        }
-    }
 
-    // To delete Hotel
     @DeleteMapping("/{hotelId}")
     public ResponseEntity<?> deleteHotel(@PathVariable Integer hotelId,
                                          @RequestHeader("Authorization") String authHeader) {
@@ -303,17 +380,17 @@ public class HotelController {
             String userType = jwtUtil.getUserTypeFromToken(token);
             Integer vendorIdFromToken = jwtUtil.getUserIdFromToken(token);
             String serviceType = authService.getVendorServiceType(vendorIdFromToken);
-            // checks if he is a Vendor
+
             if (!Objects.equals(userType, "VENDOR")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to update rooms.");
             }
-            // checks if he is a Hotel_Provider
+
             if(!Objects.equals(serviceType, "Hotel_Provider")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only Hotel_Providers are allowed to update rooms.");
             }
-            // checks if the Hotel_Provider actually owns the Hotel
+
             Integer vendorIdOfHotel = hotelService.getVendorIdByHotelId(hotelId);
             if (vendorIdOfHotel == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hotel not found");
@@ -346,17 +423,17 @@ public class HotelController {
             String userType = jwtUtil.getUserTypeFromToken(token);
             Integer vendorIdFromToken = jwtUtil.getUserIdFromToken(token);
             String serviceType = authService.getVendorServiceType(vendorIdFromToken);
-            // checks if he is a Vendor
+
             if (!Objects.equals(userType, "VENDOR")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only vendors are allowed to update rooms.");
             }
-            // checks if he is a Hotel_Provider
+
             if(!Objects.equals(serviceType, "Hotel_Provider")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Only Hotel_Providers are allowed to update rooms.");
             }
-            // checks if the Hotel_Provider actually owns the Hotel
+
             Integer vendorIdOfHotel = hotelService.getVendorIdByHotelId(hotelId);
             if (vendorIdOfHotel == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hotel not found");
@@ -366,7 +443,7 @@ public class HotelController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("You are not authorized to update rooms for this hotel");
             }
-            // checks whether the room actually exists or not
+
             boolean roomExists = hotelService.doesRoomBelongToHotel(hotelId, roomId);
             if (!roomExists) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

@@ -34,4 +34,7 @@ build/
 ### VS Code ###
 .vscode/
 
+travel-hotelbooking-firebase-adminsdk-fbsvc-ac3417e239.json
+
 src/main/resources/application.properties
+src/main/resources/travel-hotelbooking-firebase-adminsdk-fbsvc-ac3417e239.json
