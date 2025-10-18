@@ -3,11 +3,13 @@ package com.example.demo.controller;
 import com.example.demo.dto.BlogPostDto;
 import com.example.demo.model.BlogPost;
 import com.example.demo.service.BlogPostService;
+import com.example.demo.service.ImageService;
 import com.example.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -21,15 +23,21 @@ public class BlogPostController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public BlogPostController(BlogPostService blogPostService, JwtUtil jwtUtil) {
+    @Autowired
+    private ImageService imageService;
+
+    public BlogPostController(BlogPostService blogPostService, JwtUtil jwtUtil, ImageService imageService) {
         this.blogPostService = blogPostService;
         this.jwtUtil = jwtUtil;
+        this.imageService = imageService;
     }
 
-    // Staff adds a new blog post
+    // Staff adds a new blog post with image upload
     @PostMapping("/add")
     public ResponseEntity<String> addBlog(@RequestHeader("Authorization") String authHeader,
-                                          @RequestBody BlogPostDto dto) {
+                                          @RequestParam("title") String title,
+                                          @RequestParam("content") String content,
+                                          @RequestParam(value = "featuredImage", required = false) MultipartFile featuredImage) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid Authorization header");
@@ -41,6 +49,21 @@ public class BlogPostController {
             if (!"STAFF".equalsIgnoreCase(userType)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only staff members can add blogs");
             }
+
+            // Upload image to Firebase if provided
+            String imageUrl = null;
+            if (featuredImage != null && !featuredImage.isEmpty()) {
+                imageUrl = imageService.upload(featuredImage);
+                if (imageUrl.contains("couldn't upload")) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(imageUrl);
+                }
+            }
+
+            // Create DTO with uploaded image URL
+            BlogPostDto dto = new BlogPostDto();
+            dto.setTitle(title);
+            dto.setContent(content);
+            dto.setFeaturedImage(imageUrl);
 
             Integer staffId = jwtUtil.getUserIdFromToken(token);
             Integer blogId = blogPostService.addBlog(dto, staffId);
@@ -70,11 +93,14 @@ public class BlogPostController {
         return ResponseEntity.ok(blogs);
     }
 
-    // Update a blog post (staff only)
+    // Update a blog post (staff only) with optional new image
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateBlog(@RequestHeader("Authorization") String authHeader,
                                              @PathVariable("id") Integer blogId,
-                                             @RequestBody BlogPostDto dto) {
+                                             @RequestParam("title") String title,
+                                             @RequestParam("content") String content,
+                                             @RequestParam(value = "featuredImage", required = false) MultipartFile featuredImage,
+                                             @RequestParam(value = "existingImageUrl", required = false) String existingImageUrl) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid Authorization header");
@@ -86,6 +112,21 @@ public class BlogPostController {
             if (!"STAFF".equalsIgnoreCase(userType)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Only staff members can update blogs");
             }
+
+            // Determine which image URL to use
+            String imageUrl = existingImageUrl;
+            if (featuredImage != null && !featuredImage.isEmpty()) {
+                imageUrl = imageService.upload(featuredImage);
+                if (imageUrl.contains("couldn't upload")) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(imageUrl);
+                }
+            }
+
+            // Create DTO with data
+            BlogPostDto dto = new BlogPostDto();
+            dto.setTitle(title);
+            dto.setContent(content);
+            dto.setFeaturedImage(imageUrl);
 
             int updated = blogPostService.updateBlog(blogId, dto);
             if (updated == 0) {
