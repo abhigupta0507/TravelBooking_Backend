@@ -212,6 +212,26 @@ public class HotelController {
         }
     }
 
+    @GetMapping("/autocomplete/cities")
+    public ResponseEntity<ApiResponse<List<String>>> autocompleteCities(@RequestParam String q) {
+        try {
+            List<String> suggestions = hotelService.autocompleteCities(q);
+            ApiResponse<List<String>> response = new ApiResponse<>(
+                    true,
+                    "City suggestions retrieved successfully.",
+                    suggestions
+            );
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<List<String>> errorResponse = new ApiResponse<>(
+                    false,
+                    "Error fetching city suggestions.",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     // NEW: Update hotel with optional image upload
     @PutMapping(value = "/{hotelId}/", consumes = "multipart/form-data")
     public ResponseEntity<?> updateHotel(

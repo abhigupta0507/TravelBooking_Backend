@@ -50,6 +50,23 @@ public class HotelDAO {
         }
     }
 
+    public List<String> autocompleteCities(String searchTerm) {
+        String sql = """
+                SELECT DISTINCT city FROM Hotel 
+                WHERE city LIKE ? OR city LIKE ? 
+                ORDER BY CASE 
+                    WHEN city LIKE ? THEN 0 
+                    ELSE 1 
+                END, city ASC 
+                LIMIT 10
+                """;
+
+        String exactPrefix = searchTerm + "%";
+        String anywhereMatch = "% " + searchTerm + "%";
+
+        return jdbcTemplate.queryForList(sql, String.class, exactPrefix, anywhereMatch, exactPrefix);
+    }
+
     // 🔹 3. Fetch hotels by city
     public List<Hotel> findHotelsByCity(String city) {
         String sql = "SELECT * FROM Hotel WHERE city = ?";

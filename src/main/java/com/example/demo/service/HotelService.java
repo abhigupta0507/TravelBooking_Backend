@@ -58,6 +58,15 @@ public class HotelService {
         return hotelDAO.findHotelById(newHotelId);
     }
 
+    public List<String> autocompleteCities(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return List.of();
+        }
+
+        String trimmedTerm = searchTerm.trim();
+        return hotelDAO.autocompleteCities(trimmedTerm);
+    }
+
     public List<Hotel> findHotelsByCity(String city) {
         return hotelDAO.findHotelsByCity(city);
     }
