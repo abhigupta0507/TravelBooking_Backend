@@ -92,7 +92,7 @@ public class HotelBookingDao {
         try {
             // Get current date at midnight
             LocalDate today = LocalDate.now();
-            Date currentDate = (Date) Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            java.util.Date currentDate =  Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
             String sql = "DELETE FROM Hotel_Booking WHERE status = ? AND booking_date < ?";
 
