@@ -22,14 +22,14 @@ import java.util.UUID;
 public class ImageService {
 
     private String uploadFile(File file, String fileName) throws IOException {
-        BlobId blobId = BlobId.of("your-bucket-name", fileName); // Replace with your bucker name
+        BlobId blobId = BlobId.of("travel-hotelbooking.firebasestorage.app", fileName); // Replace with your bucker name
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("media").build();
-        InputStream inputStream = ImageService.class.getClassLoader().getResourceAsStream("firebase-private-key.json"); // change the file name with your one
+        InputStream inputStream = ImageService.class.getClassLoader().getResourceAsStream("travel-hotelbooking-firebase-adminsdk-fbsvc-ac3417e239.json"); // change the file name with your one
         Credentials credentials = GoogleCredentials.fromStream(inputStream);
         Storage storage = StorageOptions.newBuilder().setCredentials(credentials).build().getService();
         storage.create(blobInfo, Files.readAllBytes(file.toPath()));
 
-        String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/<bucket-name>/o/%s?alt=media";
+        String DOWNLOAD_URL = "https://firebasestorage.googleapis.com/v0/b/travel-hotelbooking.firebasestorage.app/o/%s?alt=media";
         return String.format(DOWNLOAD_URL, URLEncoder.encode(fileName, StandardCharsets.UTF_8));
     }
 
