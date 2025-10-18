@@ -1,12 +1,9 @@
 package com.example.demo.dto;
 
-import com.example.demo.model.IncludeRooms;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-
-import java.util.List;
 
 public class CreatePackageRequestDto {
 
@@ -36,12 +33,7 @@ public class CreatePackageRequestDto {
     @NotNull(message = "A status (e.g., UPCOMING, ACTIVE) is required.")
     private PackageStatus status;
 
-    @NotNull(message = "Hotel details are required.")
-    private List<IncludeRooms> hotel_rooms;
     // --- Getters and Setters ---
-
-    public List<IncludeRooms> getHotel_rooms() { return hotel_rooms; }
-    public void setHotel_rooms(List<IncludeRooms> hotel_rooms) { this.hotel_rooms = hotel_rooms; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
