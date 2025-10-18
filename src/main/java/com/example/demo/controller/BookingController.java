@@ -168,6 +168,15 @@ public class BookingController {
         }
     }
 
+    @DeleteMapping("/hotels/pending")
+    public void deletePendingHotelBookings(){
+        try{
+            hotelBookingService.deletePendingBooking();
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
     // Stripe checkout
     @PostMapping("/checkout")
     public ResponseEntity<StripeResponse> checkoutProducts(@RequestBody ProductRequest productRequest) {

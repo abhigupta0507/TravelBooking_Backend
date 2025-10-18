@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Repository
@@ -53,8 +55,8 @@ public class HotelBookingDao {
     }
 
     public List<HotelBooking> getAllHotelBookingsOfCustomer(Integer userId) {
-        String sql="SELECT * FROM Hotel_Booking WHERE customer_id=?";
-        return jdbcTemplate.query(sql,new HotelBookingRowMapper(),userId);
+        String sql="SELECT * FROM Hotel_Booking WHERE customer_id=? AND (status=? OR status=?)";
+        return jdbcTemplate.query(sql,new HotelBookingRowMapper(),userId,"CONFIRMED","FINISHED");
     }
 
     public List<HotelBooking> getAllHotelBookingsOfCustomerByStatus(Integer userId,String status){
@@ -84,6 +86,24 @@ public class HotelBookingDao {
     public int getAllottedRoomCount(Integer hotelId, Integer roomId) {
         String sql="SELECT total_rooms FROM RoomType WHERE hotel_id=? AND room_id=?  ";
         return jdbcTemplate.queryForObject(sql,Integer.class,hotelId,roomId);
+    }
+
+    public void deletePendingBooking() {
+        try {
+            // Get current date at midnight
+            LocalDate today = LocalDate.now();
+            Date currentDate = (Date) Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+            String sql = "DELETE FROM Hotel_Booking WHERE status = ? AND booking_date < ?";
+
+            int rowsDeleted = jdbcTemplate.update(sql, "PENDING", currentDate);
+
+            System.out.println("Deleted " + rowsDeleted + " pending bookings older than today");
+
+        } catch (Exception e) {
+            System.err.println("Error deleting pending bookings: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // RowMapper for HotelBooking

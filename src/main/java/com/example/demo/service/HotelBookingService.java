@@ -91,4 +91,13 @@ public class HotelBookingService {
             throw new RuntimeException(e);
         }
     }
+
+    public void deletePendingBooking() {
+        try{
+            hotelBookingDao.deletePendingBooking();
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
 }
