@@ -168,6 +168,30 @@ public class BookingController {
         }
     }
 
+    // Add this new endpoint after the existing getAllHotelBookingsOfCustomer method
+
+    @GetMapping("/hotels/{bookingId}/receipt")
+    public ResponseEntity<ApiResponse<?>> getBookingReceipt(
+            @PathVariable int bookingId,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
+            }
+
+            String token = authHeader.substring(7);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
+
+            Map<String, Object> receipt = hotelBookingService.getBookingReceipt(bookingId, userId);
+
+            return ResponseEntity.ok(new ApiResponse<>(true, "Receipt fetched successfully", receipt));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
     @DeleteMapping("/hotels/pending")
     public void deletePendingHotelBookings(){
         try{

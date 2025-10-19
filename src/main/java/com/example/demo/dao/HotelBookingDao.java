@@ -2,7 +2,9 @@ package com.example.demo.dao;
 
 import com.example.demo.model.BlogPost;
 import com.example.demo.model.HotelBooking;
+import com.example.demo.model.Payment;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -104,6 +106,16 @@ public class HotelBookingDao {
             System.err.println("Error deleting pending bookings: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    // Add this method to fetch payment for a booking
+
+    public Payment getPaymentForBooking(int bookingId) {
+        String sql = "SELECT p.* FROM payment p " +
+                "JOIN booking b ON p.payment_id = b.payment_id " +
+                "WHERE b.hotel_booking_id = ?";
+
+        return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Payment.class), bookingId);
     }
 
     // RowMapper for HotelBooking
