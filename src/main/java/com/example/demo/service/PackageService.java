@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dao.PackageDAO;
 import com.example.demo.dto.*;
+import com.example.demo.model.IncludeRooms;
 import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
 import com.example.demo.util.AuthorizationService;
@@ -138,5 +139,10 @@ public class PackageService {
         authorizationService.verifyPackageManagerStaff(authHeader);
         TourPackage thePackage = packageDAO.findPackageBySlug(packageSlug);
         return packageDAO.deleteItineraryItem(itemId, thePackage.getPackageId());
+    }
+
+    public void createIncludeRoom(String authHeader, IncludeRooms theRoom) throws Exception {
+        authorizationService.verifyPackageManagerStaff(authHeader);
+        packageDAO.insertIncludeRoom(theRoom);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.demo.dao;
 
 import com.example.demo.dto.PackageStatus;
+import com.example.demo.model.IncludeRooms;
 import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -167,6 +168,16 @@ public class PackageDAO {
         } catch (EmptyResultDataAccessException e) {
             // This should not happen if the insert was successful, but it's good practice to handle it.
             throw new RuntimeException("Failed to retrieve itinerary item ID immediately after creation for package ID: " + theItem.getPackage_id());
+        }
+    }
+
+    public void insertIncludeRoom(IncludeRooms theRoom) throws Exception{
+        String sql = "INSERT INTO Include_Rooms (package_id, hotel_id, room_id, check_in_day, check_out_day) VALUES (?, ?, ?, ?, ?)";
+        try{
+            jdbcTemplate.update(sql, theRoom.getPackage_id(), theRoom.getHotel_id(), theRoom.getRoom_id(), theRoom.getCheck_in_day(),  theRoom.getCheck_out_day());
+        }
+        catch (Exception e){
+            throw new Exception("Error while Inserting" + e.getMessage());
         }
     }
 

@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.*;
+import com.example.demo.model.IncludeRooms;
 import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
 import com.example.demo.service.AuthService;
@@ -104,6 +105,44 @@ public class PackageController {
     }
 
 
+    @PutMapping("/{packageSlug}")
+    public ResponseEntity<ApiResponse<TourPackage>> updatePackage(
+            @PathVariable String packageSlug,
+            @Valid @RequestBody UpdatePackageRequestDto packageDto,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            TourPackage updatedPackage = packageService.updatePackage(packageSlug, packageDto, authHeader);
+            ApiResponse<TourPackage> response = new ApiResponse<>(true, "Package updated successfully.", updatedPackage);
+
+            return ResponseEntity.ok(response);
+
+        } catch (SecurityException e) {
+            // Correctly handle authorization failures with a 403 status.
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+        catch (Exception e) {
+            // Correctly handle the "not found" case with a 404 status.
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    @DeleteMapping("/{packageSlug}")
+    public ResponseEntity<ApiResponse<String>> deletePackage(@PathVariable String packageSlug, @RequestHeader("Authorization") String authHeader){
+        try {
+            int deleted = packageService.deletePackage(packageSlug,authHeader);
+            if (deleted == 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false,"Tour Package not found or not deleted",null));
+            }
+
+            return ResponseEntity.ok(new ApiResponse<>(true,"Tour Package deleted Successfully",null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Error deleting Tour Package: " + e.getMessage(),null));
+        }
+    }
+
     @PostMapping("/itinerary")
     public ResponseEntity<ApiResponse<ItineraryItem>> createItineraryItem(@Valid @RequestBody ItineraryItem theItem, @RequestHeader("Authorization") String authHeader){
         try{
@@ -138,29 +177,6 @@ public class PackageController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }catch (Exception e){
             return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
-        }
-    }
-
-    @PutMapping("/{packageSlug}")
-    public ResponseEntity<ApiResponse<TourPackage>> updatePackage(
-            @PathVariable String packageSlug,
-            @Valid @RequestBody UpdatePackageRequestDto packageDto,
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            TourPackage updatedPackage = packageService.updatePackage(packageSlug, packageDto, authHeader);
-            ApiResponse<TourPackage> response = new ApiResponse<>(true, "Package updated successfully.", updatedPackage);
-
-            return ResponseEntity.ok(response);
-
-        } catch (SecurityException e) {
-            // Correctly handle authorization failures with a 403 status.
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
-        }
-        catch (Exception e) {
-            // Correctly handle the "not found" case with a 404 status.
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
 
@@ -201,20 +217,84 @@ public class PackageController {
         }
     }
 
-    @DeleteMapping("/{packageSlug}")
-    public ResponseEntity<ApiResponse<String>> deletePackage(@PathVariable String packageSlug, @RequestHeader("Authorization") String authHeader){
+
+    // This endpoint will now be available at POST /api/packages/room
+    @PostMapping("/room")
+    public ResponseEntity<ApiResponse<String>> createIncludeRoom(
+            @Valid @RequestBody IncludeRooms roomDto,
+            @RequestHeader("Authorization") String authHeader) {
         try {
-            int deleted = packageService.deletePackage(packageSlug,authHeader);
-            if (deleted == 0) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false,"Tour Package not found or not deleted",null));
-            }
+            System.out.println("jai mata di");
+            packageService.createIncludeRoom(authHeader, roomDto);
+            ApiResponse<String> response = new ApiResponse<>(true, "Room inclusion created successfully.", null);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
-            return ResponseEntity.ok(new ApiResponse<>(true,"Tour Package deleted Successfully",null));
-
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Error deleting Tour Package: " + e.getMessage(),null));
+            // This will catch database errors like foreign key violations
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
+
+    @PostMapping("/rooms")
+    public ResponseEntity<ApiResponse<String>> createIncludeRooms(@Valid @RequestBody List<IncludeRooms> theRooms, @RequestHeader("Authorization") String authHeader){
+        try{
+            System.out.println(theRooms);
+            List<IncludeRooms> createdRooms = new ArrayList<>();
+
+            for(IncludeRooms theRoom: theRooms){
+                packageService.createIncludeRoom(authHeader, theRoom);
+            }
+            // Create the response body
+            ApiResponse<String> response = new ApiResponse<>(true, "Itinerary item created successfully.", null);
+
+            // Return a 201 Created response with the new item in the body.
+            // No location URI is generated.
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
+        }
+    }
+
+//    @PutMapping("/{packageSlug}/{itemId}")
+//    public ResponseEntity<ApiResponse<ItineraryItem>> updateItineraryItem(
+//            @PathVariable String packageSlug, @PathVariable Integer itemId,
+//            @Valid @RequestBody UpdateItineraryItemRequestDto itemDto,
+//            @RequestHeader("Authorization") String authHeader) {
+//        try {
+//            ItineraryItem updatedItem = packageService.updateItineraryItem(packageSlug, itemId, itemDto, authHeader);
+//            ApiResponse<ItineraryItem> response = new ApiResponse<>(true, "Item updated successfully.", updatedItem);
+//            return ResponseEntity.ok(response);
+//
+//        } catch (SecurityException e) {
+//            // Correctly handle authorization failures with a 403 status.
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body(new ApiResponse<>(false, e.getMessage(), null));
+//        }
+//        catch (Exception e) {
+//            // Correctly handle the "not found" case with a 404 status.
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body(new ApiResponse<>(false, e.getMessage(), null));
+//        }
+//    }
+
+//    @DeleteMapping("/{packageSlug}/{itemId}")
+//    public ResponseEntity<ApiResponse<String>> deleteItineraryItem(@PathVariable String packageSlug, @PathVariable Integer itemId,@RequestHeader("Authorization") String authHeader){
+//        try {
+//            int deleted = packageService.deleteItineraryItem(packageSlug,itemId,authHeader);
+//            if (deleted == 0) {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false,"Itinerary Item not found or not deleted",null));
+//            }
+//
+//            return ResponseEntity.ok(new ApiResponse<>(true,"Itinerary Item deleted Successfully",null));
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Error deleting Itinerary Item: " + e.getMessage(),null));
+//        }
+//    }
 
 
 }
