@@ -207,6 +207,11 @@ public class PackageDAO {
         return jdbcTemplate.update(sql,item_id,package_id);
     }
 
+    public Integer deleteIncludeItem(Integer hotel_id, Integer package_id) throws SQLException{
+        String sql = "DELETE FROM Include_Rooms WHERE package_id = ? and hotel_id = ?";
+        return jdbcTemplate.update(sql,package_id,hotel_id);
+    }
+
     private ItineraryItem mapRowToItineraryItem(ResultSet rs) throws SQLException {
         ItineraryItem item = new ItineraryItem();
         item.setPackage_id(rs.getInt("package_id"));

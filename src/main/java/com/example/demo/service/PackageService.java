@@ -145,4 +145,10 @@ public class PackageService {
         authorizationService.verifyPackageManagerStaff(authHeader);
         packageDAO.insertIncludeRoom(theRoom);
     }
+
+    public Integer deleteIncludeRoom(String packageSlug,Integer hotelId, String authHeader) throws Exception{
+        authorizationService.verifyPackageManagerStaff(authHeader);
+        TourPackage thePackage = packageDAO.findPackageBySlug(packageSlug);
+        return packageDAO.deleteIncludeItem(hotelId, thePackage.getPackageId());
+    }
 }

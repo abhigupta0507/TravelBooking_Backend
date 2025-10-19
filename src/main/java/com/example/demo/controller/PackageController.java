@@ -259,42 +259,20 @@ public class PackageController {
         }
     }
 
-//    @PutMapping("/{packageSlug}/{itemId}")
-//    public ResponseEntity<ApiResponse<ItineraryItem>> updateItineraryItem(
-//            @PathVariable String packageSlug, @PathVariable Integer itemId,
-//            @Valid @RequestBody UpdateItineraryItemRequestDto itemDto,
-//            @RequestHeader("Authorization") String authHeader) {
-//        try {
-//            ItineraryItem updatedItem = packageService.updateItineraryItem(packageSlug, itemId, itemDto, authHeader);
-//            ApiResponse<ItineraryItem> response = new ApiResponse<>(true, "Item updated successfully.", updatedItem);
-//            return ResponseEntity.ok(response);
-//
-//        } catch (SecurityException e) {
-//            // Correctly handle authorization failures with a 403 status.
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-//                    .body(new ApiResponse<>(false, e.getMessage(), null));
-//        }
-//        catch (Exception e) {
-//            // Correctly handle the "not found" case with a 404 status.
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                    .body(new ApiResponse<>(false, e.getMessage(), null));
-//        }
-//    }
+    @DeleteMapping("/{packageSlug}/room/{hotelId}")
+    public ResponseEntity<ApiResponse<String>> deleteIncludeRoom(@PathVariable String packageSlug, @PathVariable Integer hotelId,@RequestHeader("Authorization") String authHeader){
+        try {
+            int deleted = packageService.deleteIncludeRoom(packageSlug,hotelId,authHeader);
+            if (deleted == 0) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false,"Include Room not found or not deleted",null));
+            }
 
-//    @DeleteMapping("/{packageSlug}/{itemId}")
-//    public ResponseEntity<ApiResponse<String>> deleteItineraryItem(@PathVariable String packageSlug, @PathVariable Integer itemId,@RequestHeader("Authorization") String authHeader){
-//        try {
-//            int deleted = packageService.deleteItineraryItem(packageSlug,itemId,authHeader);
-//            if (deleted == 0) {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse<>(false,"Itinerary Item not found or not deleted",null));
-//            }
-//
-//            return ResponseEntity.ok(new ApiResponse<>(true,"Itinerary Item deleted Successfully",null));
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Error deleting Itinerary Item: " + e.getMessage(),null));
-//        }
-//    }
+            return ResponseEntity.ok(new ApiResponse<>(true,"Include Room deleted Successfully",null));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>(false,"Error deleting Itinerary Item: " + e.getMessage(),null));
+        }
+    }
 
 
 }
