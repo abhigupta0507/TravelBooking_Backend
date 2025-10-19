@@ -82,7 +82,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         }
 
-        chain.doFilter(request, response);
+//        chain.doFilter(request, response);
     }
 
     private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
