@@ -1,22 +1,24 @@
 package com.example.demo.service;
 
+import com.example.demo.dao.HotelDAO;
 import com.example.demo.dao.PackageDAO;
 import com.example.demo.dto.*;
-import com.example.demo.model.IncludeRooms;
-import com.example.demo.model.ItineraryItem;
-import com.example.demo.model.TourPackage;
+import com.example.demo.model.*;
 import com.example.demo.util.AuthorizationService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class PackageService {
     private final PackageDAO packageDAO;
+    private final HotelDAO hotelDAO;
     private final AuthorizationService authorizationService;
 
-    public PackageService(PackageDAO packageDAO, AuthorizationService authorizationService) {
+    public PackageService(PackageDAO packageDAO, HotelDAO hotelDAO, AuthorizationService authorizationService) {
         this.packageDAO = packageDAO;
+        this.hotelDAO = hotelDAO;
         this.authorizationService = authorizationService;
     }
 
@@ -31,7 +33,14 @@ public class PackageService {
     public PackageDetailDto findPackageBySlug(String slug){
         TourPackage thePackage = packageDAO.findPackageBySlug(slug);
         List<ItineraryItem> theItems = packageDAO.findAllItineraryItemsByPackageId(thePackage.getPackageId());
-        return PackageDetailDto.from(thePackage,theItems);
+        List<IncludeRooms> theRooms = packageDAO.findAllIncludeRoomsByPackageId(thePackage.getPackageId());
+        List<IncludeRoomDetailDto> theIncludeRoomDetail = new ArrayList<>();
+        for(IncludeRooms theRoom: theRooms){
+            Hotel hotel = hotelDAO.findHotelById(theRoom.getHotel_id());
+            RoomType roomType = hotelDAO.findRoomByHotelAndRoomId(theRoom.getHotel_id(),theRoom.getRoom_id());
+            theIncludeRoomDetail.add(new IncludeRoomDetailDto(hotel,roomType));
+        }
+        return PackageDetailDto.from(thePackage,theItems,theIncludeRoomDetail);
     }
 
     public TourPackage createPackage(String authHeader, CreatePackageRequestDto requestDto) throws SecurityException {

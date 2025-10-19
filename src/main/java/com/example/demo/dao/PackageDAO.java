@@ -127,6 +127,17 @@ public class PackageDAO {
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToItineraryItem(rs), packageId);
     }
 
+    /**
+     * Finds all room inclusions for a specific tour package, ordered by the check-in day.
+     * @param packageId The ID of the parent tour package.
+     * @return A list of IncludeRooms objects.
+     */
+    public List<IncludeRooms> findAllIncludeRoomsByPackageId(Integer packageId) {
+        String sql = "SELECT * FROM Include_Rooms WHERE package_id = ? ORDER BY check_in_day";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToIncludeRooms(rs), packageId);
+    }
+
+
     public ItineraryItem findItineraryItemsById(Integer itemId,Integer packageId){
         String sql = "SELECT * FROM Itinerary_Item WHERE item_id = ? and package_id = ?";
         return jdbcTemplate.queryForObject(sql, (rs,rowNum) -> mapRowToItineraryItem(rs),itemId,packageId);
@@ -228,6 +239,23 @@ public class PackageDAO {
         item.setPin(rs.getString("pin"));
         item.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
         return item;
+    }
+
+    /**
+     * A private helper method to map a row from the Include_Rooms table to an IncludeRooms object.
+     * This is used by JdbcTemplate's query methods.
+     * @param rs The ResultSet from the database.
+     * @return A populated IncludeRooms object.
+     * @throws SQLException If a database access error occurs.
+     */
+    private IncludeRooms mapRowToIncludeRooms(ResultSet rs) throws SQLException {
+        IncludeRooms room = new IncludeRooms();
+        room.setPackage_id(rs.getInt("package_id"));
+        room.setHotel_id(rs.getInt("hotel_id"));
+        room.setRoom_id(rs.getInt("room_id"));
+        room.setCheck_in_day(rs.getInt("check_in_day"));
+        room.setCheck_out_day(rs.getInt("check_out_day"));
+        return room;
     }
 
     private TourPackage mapRowToPackage(ResultSet rs) throws SQLException {

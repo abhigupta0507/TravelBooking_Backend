@@ -25,6 +25,7 @@ public class PackageDetailDto {
     private Float avg_rating;
 
     private List<ItineraryItem> itinerary;
+    private List<IncludeRoomDetailDto> hotel_rooms;
 
     public PackageDetailDto() {
     }
@@ -51,6 +52,30 @@ public class PackageDetailDto {
         // Add the itinerary list
         dto.setItinerary(itineraryItems);
 
+        return dto;
+    }
+    /**
+     * A helper method to easily convert from a TourPackage model to this DTO.
+     * @param tourPackage The source TourPackage object from the database.
+     * @param itineraryItems The list of itinerary items for this package.
+     * @return A fully populated PackageDetailDto.
+     */
+    public static PackageDetailDto from(TourPackage tourPackage, List<ItineraryItem> itineraryItems, List<IncludeRoomDetailDto> hotelRooms) {
+        PackageDetailDto dto = new PackageDetailDto();
+        dto.setPackageId(tourPackage.getPackageId());
+        dto.setName(tourPackage.getName());
+        dto.setTour_type(tourPackage.getTour_type());
+        dto.setItinerary_summary(tourPackage.getItinerary_summary());
+        dto.setDuration_days(tourPackage.getDuration_days());
+        dto.setMax_capacity(tourPackage.getMax_capacity());
+        dto.setImage_url(tourPackage.getImage_url());
+        dto.setStatus(tourPackage.getStatus());
+        dto.setPrice(tourPackage.getPrice());
+        dto.setAvg_rating(tourPackage.getAvg_rating());
+
+        // Add the itinerary list
+        dto.setItinerary(itineraryItems);
+        dto.setHotel_rooms(hotelRooms);
         return dto;
     }
 
@@ -140,5 +165,31 @@ public class PackageDetailDto {
 
     public void setItinerary(List<ItineraryItem> itinerary) {
         this.itinerary = itinerary;
+    }
+
+    @Override
+    public String toString() {
+        return "PackageDetailDto{" +
+                "packageId=" + packageId +
+                ", name='" + name + '\'' +
+                ", tour_type='" + tour_type + '\'' +
+                ", itinerary_summary='" + itinerary_summary + '\'' +
+                ", duration_days=" + duration_days +
+                ", max_capacity=" + max_capacity +
+                ", image_url='" + image_url + '\'' +
+                ", status=" + status +
+                ", price=" + price +
+                ", avg_rating=" + avg_rating +
+                ", itinerary=" + itinerary +
+                ", hotel_rooms=" + hotel_rooms +
+                '}';
+    }
+
+    public List<IncludeRoomDetailDto> getHotel_rooms() {
+        return hotel_rooms;
+    }
+
+    public void setHotel_rooms(List<IncludeRoomDetailDto> hotel_rooms) {
+        this.hotel_rooms = hotel_rooms;
     }
 }
