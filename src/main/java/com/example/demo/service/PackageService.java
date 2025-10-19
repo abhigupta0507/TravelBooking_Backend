@@ -38,7 +38,7 @@ public class PackageService {
         for(IncludeRooms theRoom: theRooms){
             Hotel hotel = hotelDAO.findHotelById(theRoom.getHotel_id());
             RoomType roomType = hotelDAO.findRoomByHotelAndRoomId(theRoom.getHotel_id(),theRoom.getRoom_id());
-            theIncludeRoomDetail.add(new IncludeRoomDetailDto(hotel,roomType));
+            theIncludeRoomDetail.add(new IncludeRoomDetailDto(hotel,roomType,theRoom.getCheck_in_day(),theRoom.getCheck_out_day()));
         }
         return PackageDetailDto.from(thePackage,theItems,theIncludeRoomDetail);
     }

@@ -28,6 +28,8 @@ public class IncludeRoomDetailDto {
     private String room_bed_type;
     private Integer room_max_capacity;
     private Integer room_total_rooms;
+    private Integer check_in_day;
+    private Integer check_out_day;
 
 
     public IncludeRoomDetailDto() {
@@ -35,7 +37,7 @@ public class IncludeRoomDetailDto {
     }
 
 
-    public IncludeRoomDetailDto(Hotel hotel, RoomType roomType){
+    public IncludeRoomDetailDto(Hotel hotel, RoomType roomType, Integer check_in_day, Integer check_out_day){
         this.hotel_city = hotel.getCity();
         this.hotel_id = hotel.getHotel_id();
         this.hotel_name = hotel.getName();
@@ -56,6 +58,8 @@ public class IncludeRoomDetailDto {
         this.room_bed_type = roomType.getBed_type();
         this.room_max_capacity = roomType.getMax_capacity();
         this.room_total_rooms = roomType.getTotal_rooms();
+        this.check_in_day = check_in_day;
+        this.check_out_day = check_out_day;
     }
 
 
@@ -211,6 +215,22 @@ public class IncludeRoomDetailDto {
         this.room_total_rooms = room_total_rooms;
     }
 
+    public Integer getCheck_in_day() {
+        return check_in_day;
+    }
+
+    public void setCheck_in_day(Integer check_in_day) {
+        this.check_in_day = check_in_day;
+    }
+
+    public Integer getCheck_out_day() {
+        return check_out_day;
+    }
+
+    public void setCheck_out_day(Integer check_out_day) {
+        this.check_out_day = check_out_day;
+    }
+
     @Override
     public String toString() {
         return "IncludeRoomDetailDto{" +
@@ -233,6 +253,8 @@ public class IncludeRoomDetailDto {
                 ", room_bed_type='" + room_bed_type + '\'' +
                 ", room_max_capacity=" + room_max_capacity +
                 ", room_total_rooms=" + room_total_rooms +
+                ", check_in_day=" + check_in_day +
+                ", check_out_day=" + check_out_day +
                 '}';
     }
 }
