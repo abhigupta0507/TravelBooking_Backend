@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -65,6 +66,7 @@ public class PackageController {
     @PostMapping("/")
     public ResponseEntity<ApiResponse<TourPackage>> createPackage(@Valid @RequestBody CreatePackageRequestDto packageDto, @RequestHeader("Authorization") String authHeader){
         try{
+            System.out.println("Hello World");
             TourPackage createdPackage = packageService.createPackage(authHeader,packageDto);
             // Build the location URI for the newly created resource
             URI location = ServletUriComponentsBuilder
@@ -105,9 +107,31 @@ public class PackageController {
     @PostMapping("/itinerary")
     public ResponseEntity<ApiResponse<ItineraryItem>> createItineraryItem(@Valid @RequestBody ItineraryItem theItem, @RequestHeader("Authorization") String authHeader){
         try{
+            System.out.println(theItem);
             ItineraryItem createdItem = packageService.createItineraryItem(authHeader, theItem);
             // Create the response body
             ApiResponse<ItineraryItem> response = new ApiResponse<>(true, "Itinerary item created successfully.", createdItem);
+
+            // Return a 201 Created response with the new item in the body.
+            // No location URI is generated.
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(new ApiResponse<>(false,e.getMessage(),null));
+        }
+    }
+
+    @PostMapping("/itineraries")
+    public ResponseEntity<ApiResponse<List<ItineraryItem>>> createItineraryItem(@Valid @RequestBody List<ItineraryItem> theItems, @RequestHeader("Authorization") String authHeader){
+        try{
+            System.out.println(theItems);
+            List<ItineraryItem> createdItems = new ArrayList<>();
+
+            for(ItineraryItem theItem: theItems){
+                ItineraryItem createdItem = packageService.createItineraryItem(authHeader, theItem);
+                createdItems.add(createdItem);
+            }
+            // Create the response body
+            ApiResponse<List<ItineraryItem>> response = new ApiResponse<>(true, "Itinerary item created successfully.", createdItems);
 
             // Return a 201 Created response with the new item in the body.
             // No location URI is generated.
@@ -125,6 +149,7 @@ public class PackageController {
         try {
             TourPackage updatedPackage = packageService.updatePackage(packageSlug, packageDto, authHeader);
             ApiResponse<TourPackage> response = new ApiResponse<>(true, "Package updated successfully.", updatedPackage);
+
             return ResponseEntity.ok(response);
 
         } catch (SecurityException e) {
