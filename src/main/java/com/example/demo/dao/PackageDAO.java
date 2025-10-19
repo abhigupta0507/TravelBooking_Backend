@@ -1,6 +1,7 @@
 package com.example.demo.dao;
 
 import com.example.demo.dto.PackageStatus;
+import com.example.demo.model.IncludeRooms;
 import com.example.demo.model.ItineraryItem;
 import com.example.demo.model.TourPackage;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -126,6 +127,17 @@ public class PackageDAO {
         return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToItineraryItem(rs), packageId);
     }
 
+    /**
+     * Finds all room inclusions for a specific tour package, ordered by the check-in day.
+     * @param packageId The ID of the parent tour package.
+     * @return A list of IncludeRooms objects.
+     */
+    public List<IncludeRooms> findAllIncludeRoomsByPackageId(Integer packageId) {
+        String sql = "SELECT * FROM Include_Rooms WHERE package_id = ? ORDER BY check_in_day";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> mapRowToIncludeRooms(rs), packageId);
+    }
+
+
     public ItineraryItem findItineraryItemsById(Integer itemId,Integer packageId){
         String sql = "SELECT * FROM Itinerary_Item WHERE item_id = ? and package_id = ?";
         return jdbcTemplate.queryForObject(sql, (rs,rowNum) -> mapRowToItineraryItem(rs),itemId,packageId);
@@ -170,6 +182,16 @@ public class PackageDAO {
         }
     }
 
+    public void insertIncludeRoom(IncludeRooms theRoom) throws Exception{
+        String sql = "INSERT INTO Include_Rooms (package_id, hotel_id, room_id, check_in_day, check_out_day) VALUES (?, ?, ?, ?, ?)";
+        try{
+            jdbcTemplate.update(sql, theRoom.getPackage_id(), theRoom.getHotel_id(), theRoom.getRoom_id(), theRoom.getCheck_in_day(),  theRoom.getCheck_out_day());
+        }
+        catch (Exception e){
+            throw new Exception("Error while Inserting" + e.getMessage());
+        }
+    }
+
     public void updateItineraryItem(ItineraryItem theItem){
         String sql = "UPDATE Itinerary_Item SET day_number = ?, duration = ?, start_time = ?, end_time = ?,title = ?, description = ?, street_name = ?, city = ?, state = ?, pin = ?" +
                 " WHERE package_id = ? and item_id = ?";
@@ -196,6 +218,11 @@ public class PackageDAO {
         return jdbcTemplate.update(sql,item_id,package_id);
     }
 
+    public Integer deleteIncludeItem(Integer hotel_id, Integer package_id) throws SQLException{
+        String sql = "DELETE FROM Include_Rooms WHERE package_id = ? and hotel_id = ?";
+        return jdbcTemplate.update(sql,package_id,hotel_id);
+    }
+
     private ItineraryItem mapRowToItineraryItem(ResultSet rs) throws SQLException {
         ItineraryItem item = new ItineraryItem();
         item.setPackage_id(rs.getInt("package_id"));
@@ -212,6 +239,23 @@ public class PackageDAO {
         item.setPin(rs.getString("pin"));
         item.setCreated_at(rs.getObject("created_at", LocalDateTime.class));
         return item;
+    }
+
+    /**
+     * A private helper method to map a row from the Include_Rooms table to an IncludeRooms object.
+     * This is used by JdbcTemplate's query methods.
+     * @param rs The ResultSet from the database.
+     * @return A populated IncludeRooms object.
+     * @throws SQLException If a database access error occurs.
+     */
+    private IncludeRooms mapRowToIncludeRooms(ResultSet rs) throws SQLException {
+        IncludeRooms room = new IncludeRooms();
+        room.setPackage_id(rs.getInt("package_id"));
+        room.setHotel_id(rs.getInt("hotel_id"));
+        room.setRoom_id(rs.getInt("room_id"));
+        room.setCheck_in_day(rs.getInt("check_in_day"));
+        room.setCheck_out_day(rs.getInt("check_out_day"));
+        return room;
     }
 
     private TourPackage mapRowToPackage(ResultSet rs) throws SQLException {
