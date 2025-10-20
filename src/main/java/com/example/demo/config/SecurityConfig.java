@@ -24,14 +24,15 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/public/**").permitAll()
-                        .requestMatchers("/api/blogs/**").permitAll()
-                        .requestMatchers("/api/packages/**").permitAll()
-                        .requestMatchers("/api/guides/**").permitAll()
-                        .requestMatchers("api/hotels/**").permitAll()
-                        //.requestMatchers("api/guides/{guideId}/emails/**").permi
-                        //.anyRequest().permitAll()
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/public/**").permitAll()
+                                .requestMatchers("/api/blogs/**").permitAll()
+                                .requestMatchers("/api/packages/**").permitAll()
+                                .requestMatchers("/api/guides/**").permitAll()
+                                .requestMatchers("/api/hotels/**").permitAll()
+                                .requestMatchers("/api/package-reviews/package/**").permitAll()
+                                //.requestMatchers("api/guides/{guideId}/emails/**").permi
+//                                .anyRequest().permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

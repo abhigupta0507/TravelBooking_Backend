@@ -4,6 +4,8 @@ import com.example.demo.dao.PackageReviewDAO;
 import com.example.demo.model.PackageReview;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -33,5 +35,17 @@ public class PackageReviewService {
 
     public Integer getCustomerIdByBookingId(Integer packageBookingId) {
         return reviewDAO.getUserIdByPackageBookingId(packageBookingId);
+    }
+
+    public boolean doesReviewExist(Integer reviewId) {
+        return reviewDAO.doesReviewExist(reviewId);
+    }
+
+    public String getPackageBookingStatus(int packageId) {
+        return reviewDAO.getPackageBookingStatus(packageId);
+    }
+
+    public int getCustomerIdByReviewId(Integer reviewId) {
+        return reviewDAO.getCustomerIdByReviewId(reviewId);
     }
 }

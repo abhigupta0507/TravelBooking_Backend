@@ -78,4 +78,24 @@ public class PackageReviewDAO {
             return null;
         }
     }
+
+    public String getPackageBookingStatus(int packageBookingId) {
+        String sql = "SELECT booking_status FROM Booking WHERE booking_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, String.class, packageBookingId);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            // No matching booking found
+            return null;
+        }
+    }
+
+    public int getCustomerIdByReviewId(Integer reviewId) {
+        String sql = "SELECT b.customer_id from Package_Booking b JOIN Package_Review r ON r.package_booking_id = b.booking_id WHERE r.review_id = ? ";
+        return jdbcTemplate.queryForObject(sql, Integer.class, reviewId);
+    }
+
+    public Boolean doesReviewExist(Integer packageBookingId){
+        String sql = "SELECT EXISTS (SELECT 1 from Package_Review WHERE package_booking_id = ?)";
+        return jdbcTemplate.queryForObject(sql, Integer.class, packageBookingId) > 0;
+    }
 }
