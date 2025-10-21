@@ -203,6 +203,7 @@ public class HotelController {
 
             for (RoomType room : rooms) {
                 room.setHotel_id(hotelId);
+                System.out.println(room);
                 hotelService.createRoom(room);
             }
 
