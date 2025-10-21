@@ -6,6 +6,7 @@ import com.example.demo.model.Hotel;
 import com.example.demo.model.RoomType;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -40,7 +41,7 @@ public class HotelService {
         newHotel.setCity(hotelDTO.getCity());
         newHotel.setState(hotelDTO.getState());
         newHotel.setPin(hotelDTO.getPin());
-        newHotel.setRating(hotelDTO.getRating());
+        newHotel.setRating(BigDecimal.ZERO);
         newHotel.setTotal_rooms(0);
         newHotel.setVendor_id(hotelDTO.getVendorId());
         newHotel.setPrimary_email(hotelDTO.getPrimary_email());

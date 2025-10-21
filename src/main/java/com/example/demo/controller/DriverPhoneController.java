@@ -2,14 +2,17 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.model.DriverPhone;
+import com.example.demo.service.AuthService;
 import com.example.demo.service.DriverPhoneService;
 import com.example.demo.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/transports/{driverId}/phones")
@@ -22,9 +25,12 @@ public class DriverPhoneController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private AuthService authService;
+
     // ✅ Add a new phone number for a driver
     @PostMapping("/")
-    public ResponseEntity<ApiResponse<Integer>> addDriverPhone(
+    public ResponseEntity<?> addDriverPhone(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer driverId,
             @RequestBody Map<String, String> payload) {
@@ -33,6 +39,19 @@ public class DriverPhoneController {
             String phone = payload.get("phone");
             String token = authHeader.substring(7);
             Integer vendorId = jwtUtil.getUserIdFromToken(token);
+
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            if (!Objects.equals(userType, "VENDOR")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only vendors are allowed to create transport.");
+            }
+
+
+            String serviceType = authService.getVendorServiceType(vendorId);
+            if(!Objects.equals(serviceType, "Transport_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Transport_Providers are allowed to create transport phone no.");
+            }
 
             int added = driverPhoneService.addDriverPhone(vendorId, driverId, phone);
             return ResponseEntity.ok(new ApiResponse<>(true, "Phone number added successfully", added));
@@ -43,13 +62,26 @@ public class DriverPhoneController {
 
     // ✅ Get all phone numbers for a driver
     @GetMapping("/")
-    public ResponseEntity<ApiResponse<List<DriverPhone>>> getPhonesByDriver(
+    public ResponseEntity<?> getPhonesByDriver(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer driverId) {
 
         try {
             String token = authHeader.substring(7);
             Integer vendorId = jwtUtil.getUserIdFromToken(token);
+
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            if (!Objects.equals(userType, "VENDOR")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only vendors are allowed to get transport phone no.");
+            }
+
+
+            String serviceType = authService.getVendorServiceType(vendorId);
+            if(!Objects.equals(serviceType, "Transport_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Transport_Providers are allowed to get transport phone no.");
+            }
 
             List<DriverPhone> phoneNos = driverPhoneService.getPhonesByDriver(vendorId, driverId);
             return ResponseEntity.ok(new ApiResponse<>(true, "Phone numbers fetched successfully", phoneNos));
@@ -60,7 +92,7 @@ public class DriverPhoneController {
 
     // ✅ Delete a specific phone number of a driver
     @DeleteMapping("/{phone}")
-    public ResponseEntity<ApiResponse<Integer>> deleteDriverPhone(
+    public ResponseEntity<?> deleteDriverPhone(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer driverId,
             @PathVariable String phone) {
@@ -68,6 +100,19 @@ public class DriverPhoneController {
         try {
             String token = authHeader.substring(7);
             Integer vendorId = jwtUtil.getUserIdFromToken(token);
+
+            String userType = jwtUtil.getUserTypeFromToken(token);
+            if (!Objects.equals(userType, "VENDOR")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only vendors are allowed to delete transport phone no.");
+            }
+
+
+            String serviceType = authService.getVendorServiceType(vendorId);
+            if(!Objects.equals(serviceType, "Transport_Provider")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("Only Transport_Providers are allowed to delete transport phone no.");
+            }
 
             int deleted = driverPhoneService.deleteDriverPhone(vendorId, driverId, phone);
             return ResponseEntity.ok(new ApiResponse<>(true, "Phone number deleted successfully", deleted));
