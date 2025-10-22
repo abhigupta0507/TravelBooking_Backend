@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
+import com.example.demo.dto.RefundDetailDto;
 import com.example.demo.dto.RefundRequestDto;
 import com.example.demo.dto.UpdateRefundRequestDto;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -146,6 +147,26 @@ public class PaymentController {
                     .body(new ApiResponse<>(false, "An error occurred: " + e.getMessage(), null));
         }
     }
+
+    @GetMapping("/refund/{paymentId}/{refundId}")
+    public ResponseEntity<ApiResponse<RefundDetailDto>> getRefundDetails(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer paymentId,
+            @PathVariable Integer refundId) {
+        try {
+            RefundDetailDto refundDetails = paymentService.getRefundDetails(authHeader, paymentId, refundId);
+            ApiResponse<RefundDetailDto> response = new ApiResponse<>(true, "Refund details retrieved successfully.", refundDetails);
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (UnauthorizedException | SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
 
     /**
      * Endpoint to get all refunds or filter them by status.

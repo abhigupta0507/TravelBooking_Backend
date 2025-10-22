@@ -84,8 +84,42 @@ public class PaymentDao {
 
     public Booking getBookingByPaymentId(Integer paymentId){
         String sql = "SELECT * FROM Booking WHERE payment_id = ?";
-        return jdbcTemplate.queryForObject(sql,new BookingRowMapper(),paymentId);
+        try {
+            return jdbcTemplate.queryForObject(sql, new BookingRowMapper(), paymentId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
+
+    public Payment findPaymentById(Integer paymentId) {
+        // Assuming you have a PaymentRowMapper
+        String sql = "SELECT * FROM Payment WHERE payment_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new PaymentRowMapper(), paymentId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    public Integer getCustomerIdForBooking(Booking booking) {
+        String sql;
+        Integer bookingId;
+        if ("HOTEL".equalsIgnoreCase(booking.getBooking_type())) {
+            sql = "SELECT customer_id FROM Hotel_Booking WHERE booking_id = ?";
+            bookingId = booking.getHotel_booking_id();
+        } else if ("PACKAGE".equalsIgnoreCase(booking.getBooking_type())) {
+            sql = "SELECT customer_id FROM Package_Booking WHERE booking_id = ?";
+            bookingId = booking.getPackage_booking_id();
+        } else {
+            return null; // Or throw an exception for unknown booking type
+        }
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, bookingId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
 
 
     /**

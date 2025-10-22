@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dao.HotelBookingDao;
 import com.example.demo.dao.PaymentDao;
+import com.example.demo.dto.RefundDetailDto;
 import com.example.demo.dto.UpdateRefundRequestDto;
 import com.example.demo.exception.AlreadyExistsException;
 import com.example.demo.exception.ResourceNotFoundException;
@@ -168,6 +169,44 @@ public class PaymentService {
 
         // Step 6: Return the updated object.
         return existingRefund;
+    }
+
+    public RefundDetailDto getRefundDetails(String authHeader, Integer paymentId, Integer refundId) {
+        // 1. Fetch all required data pieces from the DAO.
+        authorizationService.verifyAdminStaff(authHeader);
+        Refund refund = paymentDao.findRefundById(paymentId, refundId);
+        if (refund == null) {
+            throw new ResourceNotFoundException("Refund with ID " + refundId + " for payment " + paymentId + " not found.");
+        }
+
+        Payment payment = paymentDao.findPaymentById(paymentId);
+        Booking booking = paymentDao.getBookingByPaymentId(paymentId);
+
+        if (payment == null || booking == null) {
+            throw new ResourceNotFoundException("Associated payment or booking details not found.");
+        }
+
+        // 2. Perform Authorization Check: User must be the owner OR an admin.
+        String token = authHeader.substring(7);
+        Integer requestUserId = jwtUtil.getUserIdFromToken(token);
+        Integer ownerCustomerId = paymentDao.getCustomerIdForBooking(booking);
+
+        // Check if the user is the owner
+        boolean isOwner = ownerCustomerId != null && ownerCustomerId.equals(requestUserId);
+
+        // If not the owner, check if they are an admin.
+        if (!isOwner) {
+            try {
+                // This will throw a SecurityException if the user is not a valid admin.
+                authorizationService.verifyAdminStaff(authHeader);
+            } catch (SecurityException e) {
+                // If the check fails, the user is neither the owner nor an admin.
+                throw new UnauthorizedException("You are not authorized to view these refund details.");
+            }
+        }
+
+        // 3. If authorization passes, assemble and return the DTO.
+        return RefundDetailDto.from(refund, payment, booking);
     }
 
 }
