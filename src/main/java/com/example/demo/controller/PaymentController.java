@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -143,4 +144,45 @@ public class PaymentController {
                     .body(new ApiResponse<>(false, "An error occurred: " + e.getMessage(), null));
         }
     }
+
+    /**
+     * Endpoint to get all refunds or filter them by status.
+     * Accessible only by admin staff.
+     *
+     * Example Usage:
+     * GET /api/refunds -> returns all refunds
+     * GET /api/refunds?status=PENDING -> returns all pending refunds
+     */
+    @GetMapping("/refunds")
+    public ResponseEntity<ApiResponse<List<Refund>>> getRefunds(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) String status) {
+        try {
+            List<Refund> refunds;
+            String message;
+
+            if (status != null) {
+                // Case 1: A status filter is provided
+                refunds = paymentService.getRefundsByStatus(authHeader, status);
+                message = "Successfully retrieved " + refunds.size() + " refund(s) with status: " + status;
+            } else {
+                // Case 2: No filter, get all refunds
+                refunds = paymentService.getAllRefunds(authHeader);
+                message = "Successfully retrieved all " + refunds.size() + " refund(s).";
+            }
+
+            ApiResponse<List<Refund>> response = new ApiResponse<>(true, message, refunds);
+            return ResponseEntity.ok(response);
+
+        } catch (SecurityException e) {
+            // Catches authorization failures from the service layer
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (RuntimeException e) {
+            // Catches other unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "An internal server error occurred.", null));
+        }
+    }
+
 }

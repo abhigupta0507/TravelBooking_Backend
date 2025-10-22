@@ -1,6 +1,5 @@
 package com.example.demo.service;
 
-import com.example.demo.controller.EmailDetails;
 import com.example.demo.dao.HotelBookingDao;
 import com.example.demo.dao.PaymentDao;
 import com.example.demo.exception.AlreadyExistsException;
@@ -9,24 +8,26 @@ import com.example.demo.model.Booking;
 import com.example.demo.model.HotelBooking;
 import com.example.demo.model.Payment;
 import com.example.demo.model.Refund;
+import com.example.demo.util.AuthorizationService;
 import com.example.demo.util.JwtUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class PaymentService {
 
     private PaymentDao paymentDao;
     private HotelBookingDao hotelBookingDao;
+    private AuthorizationService authorizationService;
     private JwtUtil jwtUtil;
 
-    public PaymentService(PaymentDao paymentDao,JwtUtil jwtUtil,HotelBookingDao hotelBookingDao) {
+    public PaymentService(PaymentDao paymentDao,JwtUtil jwtUtil,HotelBookingDao hotelBookingDao,AuthorizationService authorizationService) {
         this.paymentDao = paymentDao;
+        this.authorizationService = authorizationService;
         this.hotelBookingDao = hotelBookingDao;
         this.jwtUtil=jwtUtil;
     }
@@ -104,6 +105,27 @@ public class PaymentService {
 
         // Step 7: Return the fully populated refund object.
         return refundRequest;
+    }
+
+    /**
+     * Retrieves all refunds after verifying the user is an admin.
+     * @param authHeader The authorization token.
+     * @return A list of all refunds.
+     */
+    public List<Refund> getAllRefunds(String authHeader) {
+        authorizationService.verifyAdminStaff(authHeader);
+        return paymentDao.findAllRefunds();
+    }
+
+    /**
+     * Retrieves all refunds of a specific status after verifying the user is an admin.
+     * @param authHeader The authorization token.
+     * @param status The status to filter by.
+     * @return A list of filtered refunds.
+     */
+    public List<Refund> getRefundsByStatus(String authHeader, String status) {
+        authorizationService.verifyAdminStaff(authHeader);
+        return paymentDao.findAllByStatus(status);
     }
 
 }

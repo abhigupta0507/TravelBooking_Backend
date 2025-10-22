@@ -16,6 +16,7 @@ import java.awt.print.Book;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public class PaymentDao {
@@ -135,6 +136,26 @@ public class PaymentDao {
     }
 
     /**
+     * Fetches all refund records from the database.
+     * @return A list of all Refund objects.
+     */
+    public List<Refund> findAllRefunds() {
+        String sql = "SELECT * FROM Refund ORDER BY processed_at DESC";
+        return jdbcTemplate.query(sql, new RefundRowMapper());
+    }
+
+    /**
+     * Fetches all refund records that match a specific status.
+     * @param status The RefundStatus enum to filter by.
+     * @return A list of matching Refund objects.
+     */
+    public List<Refund> findAllByStatus(String status) {
+        String sql = "SELECT * FROM Refund WHERE refund_status = ? ORDER BY processed_at DESC";
+        return jdbcTemplate.query(sql, new RefundRowMapper(), status);
+    }
+
+
+    /**
      * A RowMapper to map a row from the Booking table to a Booking model object.
      */
     public class BookingRowMapper implements RowMapper<Booking> {
@@ -171,6 +192,35 @@ public class PaymentDao {
             payment.setTransaction_reference(rs.getString("transaction_reference"));
             payment.setRefund_amount(rs.getBigDecimal("refund_amount"));
             return payment;
+        }
+    }
+
+
+    /**
+     * A private helper class to map a row from the Refund table to a Refund object.
+     */
+    private static class RefundRowMapper implements RowMapper<Refund> {
+        @Override
+        public Refund mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Refund refund = new Refund();
+            refund.setPayment_id(rs.getInt("payment_id"));
+            refund.setRefund_id(rs.getInt("refund_id"));
+            refund.setRefund_amount(rs.getBigDecimal("refund_amount"));
+            refund.setProcessing_charges(rs.getBigDecimal("processing_charges"));
+            refund.setRefund_reason(rs.getString("refund_reason"));
+            refund.setProcessed_at(rs.getObject("processed_at", LocalDateTime.class));
+            refund.setReference(rs.getString("reference"));
+
+            String statusStr = rs.getString("refund_status");
+            if (statusStr != null) {
+                try {
+                    refund.setRefund_status((statusStr.toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    // Handle cases where the status in the DB is invalid
+                    refund.setRefund_status(null);
+                }
+            }
+            return refund;
         }
     }
 }
