@@ -2,6 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.RefundRequestDto;
+import com.example.demo.dto.UpdateRefundRequestDto;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.*;
 import com.example.demo.service.EmailService;
@@ -182,6 +184,33 @@ public class PaymentController {
             // Catches other unexpected errors
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, "An internal server error occurred.", null));
+        }
+    }
+
+    @PutMapping("refund/{paymentId}/{refundId}")
+    public ResponseEntity<ApiResponse<Refund>> updateRefundStatus(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer paymentId,
+            @PathVariable Integer refundId,
+            @Valid @RequestBody UpdateRefundRequestDto requestDto) {
+        try {
+            Refund updatedRefund = paymentService.updateRefundStatus(authHeader, paymentId, refundId, requestDto);
+            ApiResponse<Refund> response = new ApiResponse<>(true, "Refund status updated successfully.", updatedRefund);
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (IllegalStateException e) {
+            // Catches attempts to update a finalized refund
+            return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict is a good status for this
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
 

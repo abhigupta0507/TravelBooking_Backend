@@ -6,6 +6,7 @@ import com.example.demo.model.Refund;
 import com.example.demo.model.User;
 import com.mysql.cj.result.Row;
 import org.springframework.cglib.core.Local;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -154,6 +155,39 @@ public class PaymentDao {
         return jdbcTemplate.query(sql, new RefundRowMapper(), status);
     }
 
+    /**
+     * Finds a specific refund by its composite primary key.
+     * @param paymentId The ID of the parent payment.
+     * @param refundId The ID of the refund.
+     * @return A Refund object, or null if not found.
+     */
+    public Refund findRefundById(Integer paymentId, Integer refundId) {
+        // Assuming you have a RefundRowMapper similar to what we created before
+        String sql = "SELECT * FROM Refund WHERE payment_id = ? AND refund_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new RefundRowMapper(), paymentId, refundId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Updates the status and reference of an existing refund record.
+     * @param refund The Refund object with the updated data.
+     * @return The number of rows affected (should be 1 on success).
+     */
+    public int updateRefund(Refund refund) {
+        String sql = "UPDATE Refund SET refund_status = ?, reference = ?, processed_at = ? " +
+                "WHERE payment_id = ? AND refund_id = ?";
+
+        return jdbcTemplate.update(sql,
+                refund.getRefund_status(),
+                refund.getReference(),
+                LocalDateTime.now(), // Update the processed_at timestamp
+                refund.getPayment_id(),
+                refund.getRefund_id()
+        );
+    }
 
     /**
      * A RowMapper to map a row from the Booking table to a Booking model object.

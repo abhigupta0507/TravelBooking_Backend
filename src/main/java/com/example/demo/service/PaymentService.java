@@ -2,7 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.dao.HotelBookingDao;
 import com.example.demo.dao.PaymentDao;
+import com.example.demo.dto.UpdateRefundRequestDto;
 import com.example.demo.exception.AlreadyExistsException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.Booking;
 import com.example.demo.model.HotelBooking;
@@ -126,6 +128,46 @@ public class PaymentService {
     public List<Refund> getRefundsByStatus(String authHeader, String status) {
         authorizationService.verifyAdminStaff(authHeader);
         return paymentDao.findAllByStatus(status);
+    }
+
+    /**
+     * Updates the status and reference of a refund.
+     * @return The fully updated Refund object.
+     * @throws SecurityException if the user is not an admin.
+     * @throws ResourceNotFoundException if the refund does not exist.
+     * @throws IllegalStateException if the refund is already in a final state.
+     */
+    public Refund updateRefundStatus(String authHeader, Integer paymentId, Integer refundId, UpdateRefundRequestDto requestDto) {
+        // Step 1: Authorize the user as an admin.
+        authorizationService.verifyAdminStaff(authHeader);
+
+        // Step 2: Find the refund.
+        Refund existingRefund = paymentDao.findRefundById(paymentId, refundId);
+        if (existingRefund == null) {
+            throw new ResourceNotFoundException("Refund with Payment ID " + paymentId + " and Refund ID " + refundId + " not found.");
+        }
+
+        // Step 3: Business Rule - Prevent updating a finalized refund.
+        String currentStatus = existingRefund.getRefund_status();
+        if ("COMPLETED".equalsIgnoreCase(requestDto.getStatus())) {
+            if (requestDto.getReference() == null || requestDto.getReference().isBlank()) {
+                throw new IllegalArgumentException("A transaction reference must be provided when marking a refund as COMPLETED.");
+            }
+        }
+
+        if ("COMPLETED".equalsIgnoreCase(currentStatus) || "FAILED".equalsIgnoreCase(currentStatus)) {
+            throw new IllegalStateException("Cannot update a refund that is already " + currentStatus + ".");
+        }
+
+        // Step 4: Apply the updates from the DTO.
+        existingRefund.setRefund_status(requestDto.getStatus().toUpperCase());
+        existingRefund.setReference(requestDto.getReference());
+
+        // Step 5: Persist the changes.
+        paymentDao.updateRefund(existingRefund);
+
+        // Step 6: Return the updated object.
+        return existingRefund;
     }
 
 }
