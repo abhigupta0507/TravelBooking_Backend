@@ -38,7 +38,7 @@ public class PackageBookingService {
     private HotelBookingDao hotelBookingDao;
 
     @Transactional
-    public void createPackageBooking(int userId,PackageBooking packageBooking) {
+    public int createPackageBooking(int userId,PackageBooking packageBooking) {
         try{
             //find the package for which booking will be created
             TourPackage thePackage = packageDAO.findPackageById(packageBooking.getPackage_id());
@@ -58,6 +58,7 @@ public class PackageBookingService {
             //attach customer to package_booking
             packageBookingDao.assignCustomerToPackage(userId,packageBookingId);
 
+            return packageBookingId;
         }
         catch (Exception e){
             throw new RuntimeException(e);
@@ -322,5 +323,81 @@ public class PackageBookingService {
         }
     }
 
+//    public PackageBooking getPackageBookingById(int packageBookingId) {
+//        return packageBookingDao.getPackageBookingById(packageBookingId);
+//    }
 
+    // Add these methods to PackageBookingService.java
+
+    @Transactional
+    public int createPackageBookingWithTravellers(int userId, PackageBooking packageBooking, List<Traveller> travellers) {
+        try {
+            // Find the package
+            TourPackage thePackage = packageDAO.findPackageById(packageBooking.getPackage_id());
+
+            // Calculate cost
+            int costPerPerson = thePackage.getPrice();
+            int personCount = packageBooking.getNumber_of_people();
+            int cost = costPerPerson * personCount;
+
+            // Create package booking with PENDING status
+            int packageBookingId = packageBookingDao.createPackageBooking(userId, packageBooking, cost);
+
+            // Attach customer to package_booking
+            packageBookingDao.assignCustomerToPackage(userId, packageBookingId);
+
+            // Create and assign travellers
+            for (Traveller traveller : travellers) {
+                int travellerId = packageBookingDao.createTraveller(traveller);
+                packageBookingDao.assignTravellerToPackageBooking(travellerId, packageBookingId);
+            }
+
+            return packageBookingId;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create package booking: " + e.getMessage(), e);
+        }
+    }
+
+    public PackageBooking getPackageBookingById(int packageBookingId) {
+        try {
+            return packageBookingDao.getPackageBookingById(packageBookingId);
+        } catch (Exception e) {
+            throw new RuntimeException("Package booking not found", e);
+        }
+    }
+
+    public List<PackageBooking> getAllPackageBookingsOfCustomer(Integer userId, String status) {
+        try {
+            if (status == null || status.equals("all")) {
+                return packageBookingDao.getAllPackageBookingsByCustomerId(userId);
+            } else {
+                return packageBookingDao.getPackageBookingsByCustomerIdAndStatus(userId, status);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch package bookings: " + e.getMessage(), e);
+        }
+    }
+
+    public void confirmPackageBookingStatus(Integer packageBookingId) {
+        try{
+            packageBookingDao.changePackageBookingStatus("CONFIRMED",packageBookingId);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+
+//
+//    public int createPackageBookingWithTravellers(Integer userId, PackageBooking packageBooking, List<Traveller> travellers) {
+//        createPackageBooking(userId,packageBooking);
+//
+//
+//
+//    }
+
+
+//    public List<PackageBooking> getAllPackageBookingsOfCustomer(Integer userId, String status) {
+//
+//    }
 }

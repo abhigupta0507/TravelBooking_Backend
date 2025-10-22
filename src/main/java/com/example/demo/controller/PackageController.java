@@ -104,6 +104,22 @@ public class PackageController {
         }
     }
 
+    @GetMapping("/id/{packageId}")
+    public ResponseEntity<ApiResponse<PackageDetailDto>> getPackageBySlug(@PathVariable int packageId) {
+        PackageDetailDto thePackage = packageService.findPackageById(packageId);
+
+        if (thePackage == null) {
+            // If the package is not found, return a 404 Not Found response
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, "Package with slug '" + "' not found.", null));
+        } else {
+            // If the package is found, return a 200 OK response with the package data
+            return ResponseEntity
+                    .ok(new ApiResponse<>(true, "Package found.", thePackage));
+        }
+    }
+
 
     @PutMapping("/{packageSlug}")
     public ResponseEntity<ApiResponse<TourPackage>> updatePackage(

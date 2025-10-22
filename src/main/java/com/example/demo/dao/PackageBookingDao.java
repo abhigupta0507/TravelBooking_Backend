@@ -323,6 +323,29 @@ public class PackageBookingDao {
         }
     }
 
+    // Add these methods to PackageBookingDao.java
+
+    public void updatePackageBookingStatus(Integer bookingId, String status) {
+        String sql = "UPDATE Package_Booking SET status = ? WHERE booking_id = ?";
+        jdbcTemplate.update(sql, status, bookingId);
+    }
+
+    public List<PackageBooking> getAllPackageBookingsByCustomerId(Integer customerId) {
+        String sql = "SELECT * FROM Package_Booking WHERE customer_id = ? ORDER BY booking_date DESC";
+        return jdbcTemplate.query(sql, new PackageBookingRowMapper(), customerId);
+    }
+
+    public List<PackageBooking> getPackageBookingsByCustomerIdAndStatus(Integer customerId, String status) {
+        String sql = "SELECT * FROM Package_Booking WHERE customer_id = ? AND status = ? ORDER BY booking_date DESC";
+        return jdbcTemplate.query(sql, new PackageBookingRowMapper(), customerId, status);
+    }
+
+    public void changePackageBookingStatus(String newStatus, Integer packageBookingId) {
+        String sql="UPDATE Package_Booking SET status=? WHERE booking_id=?";
+        jdbcTemplate.update(sql,newStatus,packageBookingId);
+    }
+
+
     private static class PackageBookingRowMapper implements RowMapper<PackageBooking> {
         @Override
         public PackageBooking mapRow(ResultSet rs, int rowNum) throws SQLException {
