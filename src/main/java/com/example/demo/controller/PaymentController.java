@@ -1,15 +1,16 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
-import com.example.demo.model.Hotel;
-import com.example.demo.model.HotelBooking;
-import com.example.demo.model.Payment;
-import com.example.demo.model.RoomType;
+import com.example.demo.dto.RefundRequestDto;
+import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.model.*;
 import com.example.demo.service.EmailService;
 import com.example.demo.service.HotelBookingService;
 import com.example.demo.service.HotelService;
 import com.example.demo.service.PaymentService;
 import com.example.demo.util.JwtUtil;
+import com.google.api.gax.rpc.AlreadyExistsException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -108,6 +109,38 @@ public class PaymentController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+
+    @PostMapping("/{paymentId}/refund")
+    public ResponseEntity<ApiResponse<Refund>> requestRefund(
+            @PathVariable Integer paymentId,
+            @Valid @RequestBody RefundRequestDto refundDto,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
+
+            // The DTO only carries the reason. The service calculates the rest.
+            Refund refundRequest = new Refund();
+            refundRequest.setPayment_id(paymentId);
+            refundRequest.setRefund_reason(refundDto.getRefund_reason());
+
+            Refund createdRefund = paymentService.createRefundRequest(refundRequest, userId);
+
+            ApiResponse<Refund> response = new ApiResponse<>(true, "Refund request created successfully.", createdRefund);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (AlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict is better for existing resources
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN) // 403 Forbidden for auth failures
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, "An error occurred: " + e.getMessage(), null));
         }
     }
 }
