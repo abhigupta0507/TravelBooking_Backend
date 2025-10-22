@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * DTO for updating an existing ItineraryItem.
@@ -18,10 +19,10 @@ public class UpdateItineraryItemRequestDto {
     private Integer duration;
 
     @NotNull(message = "A start time is required.")
-    private LocalDateTime start_time;
+    private LocalTime start_time;
 
     @NotNull(message = "An end time is required.")
-    private LocalDateTime end_time;
+    private LocalTime end_time;
 
     @NotBlank(message = "A title for the itinerary item is required.")
     private String title;
@@ -38,10 +39,10 @@ public class UpdateItineraryItemRequestDto {
     public void setDay_number(Integer day_number) { this.day_number = day_number; }
     public Integer getDuration() { return duration; }
     public void setDuration(Integer duration) { this.duration = duration; }
-    public LocalDateTime getStart_time() { return start_time; }
-    public void setStart_time(LocalDateTime start_time) { this.start_time = start_time; }
-    public LocalDateTime getEnd_time() { return end_time; }
-    public void setEnd_time(LocalDateTime end_time) { this.end_time = end_time; }
+    public LocalTime getStart_time() { return start_time; }
+    public void setStart_time(LocalTime start_time) { this.start_time = start_time; }
+    public LocalTime getEnd_time() { return end_time; }
+    public void setEnd_time(LocalTime end_time) { this.end_time = end_time; }
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public String getDescription() { return description; }

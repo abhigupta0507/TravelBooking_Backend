@@ -1,6 +1,5 @@
 package com.example.demo.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -17,11 +16,9 @@ public class TransportAssignment {
     private String drop_pin;
     private String est_time;
     private LocalDate start_date;
-    private LocalTime start_time;
     private LocalDate end_date;
-    private LocalTime end_time;
-    private BigDecimal total_distance;
-    private BigDecimal cost;
+    private int total_distance;
+    private int cost;
     private String status;
     private Integer package_booking_id;
     private Integer item_id;
@@ -33,7 +30,7 @@ public class TransportAssignment {
     public TransportAssignment(Integer assignment_id, String pickup_street, String pickup_city, String pickup_state,
                                 String pickup_pin, String drop_street, String drop_city, String drop_state, String drop_pin,
                                 String est_time, LocalDate start_date, LocalTime start_time, LocalDate end_date, LocalTime end_time,
-                                BigDecimal total_distance, BigDecimal cost, String status, Integer package_booking_id,
+                                int total_distance, int cost, String status, Integer package_booking_id,
                                 Integer item_id, Integer package_id, Integer driver_id) {
         this.assignment_id = assignment_id;
         this.pickup_street = pickup_street;
@@ -46,9 +43,7 @@ public class TransportAssignment {
         this.drop_pin = drop_pin;
         this.est_time = est_time;
         this.start_date = start_date;
-        this.start_time = start_time;
         this.end_date = end_date;
-        this.end_time = end_time;
         this.total_distance = total_distance;
         this.cost = cost;
         this.status = status;
@@ -91,20 +86,14 @@ public class TransportAssignment {
     public LocalDate getStart_date() { return start_date; }
     public void setStart_date(LocalDate start_date) { this.start_date = start_date; }
 
-    public LocalTime getStart_time() { return start_time; }
-    public void setStart_time(LocalTime start_time) { this.start_time = start_time; }
-
     public LocalDate getEnd_date() { return end_date; }
     public void setEnd_date(LocalDate end_date) { this.end_date = end_date; }
 
-    public LocalTime getEnd_time() { return end_time; }
-    public void setEnd_time(LocalTime end_time) { this.end_time = end_time; }
+    public int getTotal_distance() { return total_distance; }
+    public void setTotal_distance(int total_distance) { this.total_distance = total_distance; }
 
-    public BigDecimal getTotal_distance() { return total_distance; }
-    public void setTotal_distance(BigDecimal total_distance) { this.total_distance = total_distance; }
-
-    public BigDecimal getCost() { return cost; }
-    public void setCost(BigDecimal cost) { this.cost = cost; }
+    public int getCost() { return cost; }
+    public void setCost(int cost) { this.cost = cost; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
@@ -135,9 +124,6 @@ public class TransportAssignment {
                 ", drop_pin='" + drop_pin + '\'' +
                 ", est_time='" + est_time + '\'' +
                 ", start_date=" + start_date +
-                ", start_time=" + start_time +
-                ", end_date=" + end_date +
-                ", end_time=" + end_time +
                 ", total_distance=" + total_distance +
                 ", cost=" + cost +
                 ", status='" + status + '\'' +

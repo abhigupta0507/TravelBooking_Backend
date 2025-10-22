@@ -35,6 +35,11 @@ public class TransportDao {
         return jdbcTemplate.queryForObject(sql, new TransportRowMapper(), vendorId, driverId);
     }
 
+    public Transport getTransportById(Integer driverId){
+        String sql = "SELECT * FROM Transport WHERE driver_id = ?";
+        return jdbcTemplate.queryForObject(sql, new TransportRowMapper(),driverId);
+    }
+
     // ✅ 4. Create a new transport
     public Integer createTransport(Transport transport, Integer vendorId) {
         String sql = "INSERT INTO Transport " +

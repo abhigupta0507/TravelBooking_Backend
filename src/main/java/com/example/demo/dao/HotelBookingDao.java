@@ -1,6 +1,7 @@
 package com.example.demo.dao;
 
 import com.example.demo.model.BlogPost;
+import com.example.demo.model.HotelAssignment;
 import com.example.demo.model.HotelBooking;
 import com.example.demo.model.Payment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -35,9 +37,9 @@ public class HotelBookingDao {
             ps.setDate(1, checkInDate);
             ps.setDate(2, checkOutDate);
             Timestamp now = new Timestamp(System.currentTimeMillis());
-            ps.setInt(3, noOfRooms); // published_at
+            ps.setInt(3, noOfRooms);
             ps.setString(4, roomType);
-            ps.setTimestamp(5,now);// last_updated
+            ps.setTimestamp(5,now);
             ps.setInt(6, guestCount);
             ps.setString(7,"PENDING");
             ps.setInt(8,cost);
@@ -118,6 +120,7 @@ public class HotelBookingDao {
         return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Payment.class), bookingId);
     }
 
+
     // RowMapper for HotelBooking
     private static class HotelBookingRowMapper implements RowMapper<HotelBooking> {
         @Override
@@ -139,6 +142,19 @@ public class HotelBookingDao {
             booking.setHotel_id(rs.getInt("hotel_id"));
             booking.setRoom_id(rs.getInt("room_id"));
             booking.setCustomer_id(rs.getInt("customer_id"));
+            return booking;
+        }
+    }
+    private static class HotelAssignmentRowMapper implements RowMapper<HotelAssignment> {
+        @Override
+        public HotelAssignment mapRow(ResultSet rs, int rowNum) throws SQLException {
+            HotelAssignment booking = new HotelAssignment();
+            //LocalDateTime createdAt= rs.getTimestamp("created_at");
+            booking.setCreated_at(rs.getTimestamp("created_at"));
+            booking.setItem_id(rs.getInt("item_id"));
+            booking.setHotel_booking_id(rs.getInt("hotel_booking_id"));
+            booking.setPackage_id(rs.getInt("package_id"));
+            booking.setPackage_booking_id(rs.getInt("package_booking_id"));
             return booking;
         }
     }

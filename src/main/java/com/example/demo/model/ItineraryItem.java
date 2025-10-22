@@ -9,8 +9,8 @@ public class ItineraryItem {
     private Integer item_id;
     private Integer day_number;
     private Integer duration;
-    private LocalDateTime start_time;
-    private LocalDateTime end_time;
+    private LocalTime start_time;
+    private LocalTime end_time;
     private String title;
     private String description;
     private String street_name;
@@ -22,7 +22,7 @@ public class ItineraryItem {
     public ItineraryItem() {}
 
     public ItineraryItem(Integer package_id, Integer item_id, Integer day_number, Integer duration,
-                         LocalDateTime start_time, LocalDateTime end_time, String title, String description,
+                         LocalTime start_time, LocalTime end_time, String title, String description,
                           String street_name, String city, String state, String pin, LocalDateTime created_at) {
         this.package_id = package_id;
         this.item_id = item_id;
@@ -39,7 +39,7 @@ public class ItineraryItem {
         this.created_at = created_at;
     }
 
-    public ItineraryItem(Integer package_id,Integer day_number,Integer duration,LocalDateTime start_time,LocalDateTime end_time,String title,String description,String street_name,String city,String state,String pin,LocalDateTime created_at){
+    public ItineraryItem(Integer package_id,Integer day_number,Integer duration,LocalTime start_time,LocalTime end_time,String title,String description,String street_name,String city,String state,String pin,LocalDateTime created_at){
         this.package_id = package_id;
         this.day_number = day_number;
         this.duration = duration;
@@ -54,6 +54,8 @@ public class ItineraryItem {
         this.created_at = created_at;
     }
 
+
+
     public Integer getPackage_id() { return package_id; }
     public void setPackage_id(Integer package_id) { this.package_id = package_id; }
 
@@ -66,11 +68,11 @@ public class ItineraryItem {
     public Integer getDuration() { return duration; }
     public void setDuration(Integer duration) { this.duration = duration; }
 
-    public LocalDateTime getStart_time() { return start_time; }
-    public void setStart_time(LocalDateTime start_time) { this.start_time = start_time; }
+    public LocalTime getStart_time() { return start_time; }
+    public void setStart_time(LocalTime start_time) { this.start_time = start_time; }
 
-    public LocalDateTime getEnd_time() { return end_time; }
-    public void setEnd_time(LocalDateTime end_time) { this.end_time = end_time; }
+    public LocalTime getEnd_time() { return end_time; }
+    public void setEnd_time(LocalTime end_time) { this.end_time = end_time; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

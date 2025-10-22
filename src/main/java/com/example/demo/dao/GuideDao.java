@@ -88,6 +88,11 @@ public class GuideDao {
         return jdbcTemplate.update(sql, vendorId, guideId);
     }
 
+    public Guide getGuideById(int guideId) {
+        String sql="SELECT * FROM Guide WHERE guide_id=?";
+        return jdbcTemplate.queryForObject(sql,new GuideRowMapper(),guideId);
+    }
+
     // ✅ RowMapper for Guide
     private static class GuideRowMapper implements RowMapper<Guide> {
         @Override

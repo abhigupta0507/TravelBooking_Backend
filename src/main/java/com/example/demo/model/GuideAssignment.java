@@ -1,19 +1,19 @@
 package com.example.demo.model;
 
-import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class GuideAssignment {
 
     private Integer assignment_id;
-    private LocalDate assignment_date;
+    private Timestamp assignment_date;
     private Integer duration;
-    private LocalDate start_date;
+    private Timestamp start_date;
     private LocalTime start_time;
-    private LocalDate end_date;
+    private Timestamp end_date;
     private LocalTime end_time;
-    private BigDecimal cost;
+    private int cost;
     private String status;
     private Integer package_booking_id;
     private Integer guide_id;
@@ -22,9 +22,9 @@ public class GuideAssignment {
 
     public GuideAssignment() {}
 
-    public GuideAssignment(Integer assignment_id, LocalDate assignment_date, Integer duration,
-                            LocalDate start_date, LocalTime start_time, LocalDate end_date, LocalTime end_time,
-                            BigDecimal cost, String status, Integer package_booking_id, Integer guide_id,
+    public GuideAssignment(Integer assignment_id, Timestamp assignment_date, Integer duration,
+                            Timestamp start_date, LocalTime start_time, Timestamp end_date, LocalTime end_time,
+                            int cost, String status, Integer package_booking_id, Integer guide_id,
                             Integer item_id, Integer package_id) {
         this.assignment_id = assignment_id;
         this.assignment_date = assignment_date;
@@ -44,26 +44,26 @@ public class GuideAssignment {
     public Integer getAssignment_id() { return assignment_id; }
     public void setAssignment_id(Integer assignment_id) { this.assignment_id = assignment_id; }
 
-    public LocalDate getAssignment_date() { return assignment_date; }
-    public void setAssignment_date(LocalDate assignment_date) { this.assignment_date = assignment_date; }
+    public Timestamp getAssignment_date() { return assignment_date; }
+    public void setAssignment_date(Timestamp assignment_date) { this.assignment_date = assignment_date; }
 
     public Integer getDuration() { return duration; }
     public void setDuration(Integer duration) { this.duration = duration; }
 
-    public LocalDate getStart_date() { return start_date; }
-    public void setStart_date(LocalDate start_date) { this.start_date = start_date; }
+    public Timestamp getStart_date() { return start_date; }
+    public void setStart_date(Timestamp start_date) { this.start_date = start_date; }
 
     public LocalTime getStart_time() { return start_time; }
     public void setStart_time(LocalTime start_time) { this.start_time = start_time; }
 
-    public LocalDate getEnd_date() { return end_date; }
-    public void setEnd_date(LocalDate end_date) { this.end_date = end_date; }
+    public Timestamp getEnd_date() { return end_date; }
+    public void setEnd_date(Timestamp end_date) { this.end_date = end_date; }
 
     public LocalTime getEnd_time() { return end_time; }
     public void setEnd_time(LocalTime end_time) { this.end_time = end_time; }
 
-    public BigDecimal getCost() { return cost; }
-    public void setCost(BigDecimal cost) { this.cost = cost; }
+    public int getCost() { return cost; }
+    public void setCost(int cost) { this.cost = cost; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

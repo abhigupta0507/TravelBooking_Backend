@@ -1,10 +1,11 @@
 package com.example.demo.model;
 
-import java.time.LocalDateTime;
+
+import java.sql.Timestamp;
 
 public class HotelAssignment {
     private Integer hotel_assignment_id;
-    private LocalDateTime created_at;
+    private Timestamp created_at;
     private Integer package_booking_id;
     private Integer hotel_booking_id;
     private Integer package_id;
@@ -12,7 +13,7 @@ public class HotelAssignment {
 
     public HotelAssignment() {}
 
-    public HotelAssignment(Integer hotel_assignment_id, LocalDateTime created_at, Integer package_booking_id,
+    public HotelAssignment(Integer hotel_assignment_id, Timestamp created_at, Integer package_booking_id,
                             Integer hotel_booking_id, Integer package_id, Integer item_id) {
         this.hotel_assignment_id = hotel_assignment_id;
         this.created_at = created_at;
@@ -30,11 +31,11 @@ public class HotelAssignment {
         this.hotel_assignment_id = hotel_assignment_id;
     }
 
-    public LocalDateTime getCreated_at() {
+    public Timestamp getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(LocalDateTime created_at) {
+    public void setCreated_at(Timestamp created_at) {
         this.created_at = created_at;
     }
 

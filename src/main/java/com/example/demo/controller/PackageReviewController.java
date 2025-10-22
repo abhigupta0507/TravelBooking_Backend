@@ -17,7 +17,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/package-reviews")
-public class PackageReviewController {
+public class  PackageReviewController {
 
     private final PackageReviewService reviewService;
     @Autowired
