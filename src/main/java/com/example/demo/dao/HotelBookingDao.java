@@ -1,9 +1,6 @@
 package com.example.demo.dao;
 
-import com.example.demo.model.BlogPost;
-import com.example.demo.model.Booking;
-import com.example.demo.model.HotelBooking;
-import com.example.demo.model.Payment;
+import com.example.demo.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
@@ -130,6 +128,7 @@ public class HotelBookingDao {
         return jdbcTemplate.queryForObject(sql, new BeanPropertyRowMapper<>(Payment.class), bookingId);
     }
 
+
     // RowMapper for HotelBooking
     private static class HotelBookingRowMapper implements RowMapper<HotelBooking> {
         @Override
@@ -173,6 +172,21 @@ public class HotelBookingDao {
             booking.setHotel_booking_id(rs.getObject("hotel_booking_id", Integer.class));
             booking.setPayment_id(rs.getObject("payment_id", Integer.class));
 
+            return booking;
+        }
+    }
+
+
+    private static class HotelAssignmentRowMapper implements RowMapper<HotelAssignment> {
+        @Override
+        public HotelAssignment mapRow(ResultSet rs, int rowNum) throws SQLException {
+            HotelAssignment booking = new HotelAssignment();
+            //LocalDateTime createdAt= rs.getTimestamp("created_at");
+            booking.setCreated_at(rs.getTimestamp("created_at"));
+            booking.setItem_id(rs.getInt("item_id"));
+            booking.setHotel_booking_id(rs.getInt("hotel_booking_id"));
+            booking.setPackage_id(rs.getInt("package_id"));
+            booking.setPackage_booking_id(rs.getInt("package_booking_id"));
             return booking;
         }
     }

@@ -160,4 +160,17 @@ public class PackageService {
         TourPackage thePackage = packageDAO.findPackageBySlug(packageSlug);
         return packageDAO.deleteIncludeItem(hotelId, thePackage.getPackageId());
     }
+
+    public PackageDetailDto findPackageById(int packageId) {
+        TourPackage thePackage = packageDAO.findPackageById(packageId);
+        List<ItineraryItem> theItems = packageDAO.findAllItineraryItemsByPackageId(thePackage.getPackageId());
+        List<IncludeRooms> theRooms = packageDAO.findAllIncludeRoomsByPackageId(thePackage.getPackageId());
+        List<IncludeRoomDetailDto> theIncludeRoomDetail = new ArrayList<>();
+        for(IncludeRooms theRoom: theRooms){
+            Hotel hotel = hotelDAO.findHotelById(theRoom.getHotel_id());
+            RoomType roomType = hotelDAO.findRoomByHotelAndRoomId(theRoom.getHotel_id(),theRoom.getRoom_id());
+            theIncludeRoomDetail.add(new IncludeRoomDetailDto(hotel,roomType,theRoom.getCheck_in_day(),theRoom.getCheck_out_day()));
+        }
+        return PackageDetailDto.from(thePackage,theItems,theIncludeRoomDetail);
+    }
 }

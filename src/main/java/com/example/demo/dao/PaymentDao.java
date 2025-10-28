@@ -7,6 +7,8 @@ import com.example.demo.model.User;
 import com.mysql.cj.result.Row;
 import org.springframework.cglib.core.Local;
 import org.springframework.dao.EmptyResultDataAccessException;
+import com.example.demo.model.Refund;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -81,6 +83,7 @@ public class PaymentDao {
         String sql = "UPDATE Hotel_Booking SET status = ? WHERE booking_id = ?";
         jdbcTemplate.update(sql, status, hotelBookingId);
     }
+
 
     public Booking getBookingByPaymentId(Integer paymentId){
         String sql = "SELECT * FROM Booking WHERE payment_id = ?";
@@ -245,6 +248,34 @@ public class PaymentDao {
 
             return booking;
         }
+    }
+
+    // Add these methods to PaymentDao.java
+
+    public int createPackageBookingRecord(String bookingType, String bookingStatus,
+                                          Integer packageBookingId, Integer paymentId) {
+        String sql = "INSERT INTO Booking (booking_type, created_at, booking_status, " +
+                "package_booking_id, hotel_booking_id, payment_id) VALUES (?, ?, ?, ?, ?, ?)";
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, bookingType);
+            ps.setTimestamp(2, new Timestamp(System.currentTimeMillis()));
+            ps.setString(3, bookingStatus);
+            ps.setInt(4, packageBookingId);
+            ps.setNull(5, Types.INTEGER);
+            ps.setInt(6, paymentId);
+            return ps;
+        }, keyHolder);
+
+        return keyHolder.getKey().intValue();
+    }
+
+    public void updatePackageBookingStatus(Integer packageBookingId, String status) {
+        String sql = "UPDATE Package_Booking SET status = ? WHERE booking_id = ?";
+        jdbcTemplate.update(sql, status, packageBookingId);
     }
 
     private static class PaymentRowMapper implements RowMapper<Payment> {

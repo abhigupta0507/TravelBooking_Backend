@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Repository
@@ -229,8 +230,8 @@ public class PackageDAO {
         item.setItem_id(rs.getInt("item_id"));
         item.setDay_number(rs.getInt("day_number"));
         item.setDuration(rs.getInt("duration"));
-        item.setStart_time(rs.getObject("start_time", LocalDateTime.class));
-        item.setEnd_time(rs.getObject("end_time", LocalDateTime.class));
+        item.setStart_time(rs.getObject("start_time", LocalTime.class));
+        item.setEnd_time(rs.getObject("end_time", LocalTime.class));
         item.setTitle(rs.getString("title"));
         item.setDescription(rs.getString("description"));
         item.setStreet_name(rs.getString("street_name"));
