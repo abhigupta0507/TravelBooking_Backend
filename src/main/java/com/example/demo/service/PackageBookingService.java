@@ -335,6 +335,10 @@ public class PackageBookingService {
             // Find the package
             TourPackage thePackage = packageDAO.findPackageById(packageBooking.getPackage_id());
 
+            if(thePackage.getMax_capacity()<travellers.size()){
+                throw new RuntimeException("More travellers than max_capacity of a tour!");
+            }
+
             // Calculate cost
             int costPerPerson = thePackage.getPrice();
             int personCount = packageBooking.getNumber_of_people();
@@ -387,17 +391,4 @@ public class PackageBookingService {
         }
     }
 
-
-//
-//    public int createPackageBookingWithTravellers(Integer userId, PackageBooking packageBooking, List<Traveller> travellers) {
-//        createPackageBooking(userId,packageBooking);
-//
-//
-//
-//    }
-
-
-//    public List<PackageBooking> getAllPackageBookingsOfCustomer(Integer userId, String status) {
-//
-//    }
 }

@@ -38,10 +38,9 @@ public class PackagePaymentService {
 
             // Update package booking status to CONFIRMED
             packageBookingDao.changePackageBookingStatus("CONFIRMED",packageBookingId);
+
+            //create booking record
             paymentDao.createPackageBookingRecord("PACKAGE","CONFIRMED",packageBookingId, paymentId);
-
-            // Create booking record
-
 
             // Assign guides, transport, and hotels after payment confirmation
             packageBookingService.assignGuidesToPackageBooking(packageBookingId);
