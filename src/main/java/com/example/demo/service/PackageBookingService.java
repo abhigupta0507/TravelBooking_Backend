@@ -20,7 +20,7 @@ import java.util.List;
 public class PackageBookingService {
 
     @Autowired
-    private com.example.demo.daor.PackageBookingDao packageBookingDao;
+    private com.example.demo.dao.PackageBookingDao packageBookingDao;
 
     @Autowired
     private PackageDAO packageDAO;
