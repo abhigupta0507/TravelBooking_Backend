@@ -123,6 +123,7 @@ public class PaymentController {
             @Valid @RequestBody RefundRequestDto refundDto,
             @RequestHeader("Authorization") String authHeader) {
         try {
+            System.out.println(refundDto);
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
