@@ -3,13 +3,13 @@ package com.example.demo.service;
 import com.example.demo.dao.AuthDao;
 import com.example.demo.dao.HotelBookingDao;
 import com.example.demo.dao.HotelDAO;
-import com.example.demo.model.Hotel;
-import com.example.demo.model.HotelBooking;
-import com.example.demo.model.Payment;
-import com.example.demo.model.RoomType;
+import com.example.demo.dto.HotelBookingDto;
+import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.model.*;
 import org.springframework.stereotype.Service;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +64,45 @@ public class HotelBookingService {
 
     }
 
+    /**
+     * Cancels a hotel booking if the user is authorized and the booking is cancellable.
+     * @param bookingId The ID of the booking to cancel.
+     * @param userId The ID of the user attempting the cancellation.
+     * @return The updated HotelBooking object.
+     * @throws com.example.demo.exception.ResourceNotFoundException if the booking is not found.
+     * @throws UnauthorizedException if the user is not the owner of the booking.
+     * @throws IllegalStateException if the booking is already cancelled or completed.
+     */
+    public HotelBooking cancelHotelBooking(int bookingId, int userId) {
+        // Step 1: Fetch the booking. Handles "not found".
+        HotelBooking booking = getHotelBooking(bookingId);
+        Booking theParentBooking = hotelBookingDao.getBookingForHotelBooking(booking.getBooking_id());
+
+
+        // Step 2: Verify ownership.
+        if (booking.getCustomer_id() != userId) {
+            throw new UnauthorizedException("You are not authorized to cancel this booking.");
+        }
+
+        // Step 3: Check if the booking is already in a final state.
+        String currentStatus = booking.getStatus();
+        if ("CANCELLED".equalsIgnoreCase(currentStatus) || "COMPLETED".equalsIgnoreCase(currentStatus)) {
+            throw new IllegalStateException("Booking is already " + currentStatus + " and cannot be cancelled.");
+        }
+
+        // Step 4: Update the status in the database.
+        int hotelBookingRowsAffected = hotelBookingDao.updateHotelBookingStatus("CANCELLED", bookingId);
+        int bookingRowsAffected = hotelBookingDao.updateBookingStatus("CANCELLED",theParentBooking.getBooking_id());
+        if (hotelBookingRowsAffected == 0) {
+            // This could happen in a rare race condition or if the DB connection failed mid-way
+            throw new RuntimeException("Failed to update booking status in the database.");
+        }
+
+        // Step 5: Update the status in our local object and return it.
+        booking.setStatus("CANCELLED");
+        return booking;
+    }
+
     public List<HotelBooking> getAllHotelBookingsOfCustomer(Integer userId) {
         try {
             return hotelBookingDao.getAllHotelBookingsOfCustomer(userId);
@@ -71,6 +110,17 @@ public class HotelBookingService {
         catch (Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+    public List<HotelBookingDto> getAllHotelBookingsDtoOfCustomer(List<HotelBooking> hotelBookingsDB) {
+        List<HotelBookingDto> hotelBookingDtoList = new ArrayList<>();
+
+        for(HotelBooking theHotelBooking: hotelBookingsDB){
+            Booking theParentBooking = hotelBookingDao.getBookingForHotelBooking(theHotelBooking.getBooking_id());
+            hotelBookingDtoList.add(new HotelBookingDto(theHotelBooking,theParentBooking));
+        }
+
+        return hotelBookingDtoList;
     }
 
     public List<HotelBooking> getHotelBookingsOfCustomerByStatus(int userId,String status){

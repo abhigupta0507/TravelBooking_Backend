@@ -1,4 +1,4 @@
-package com.example.demo.daor;
+package com.example.demo.dao;
 
 import com.example.demo.dto.AddressDto;
 import com.example.demo.model.*;

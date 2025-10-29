@@ -21,6 +21,25 @@ public class HotelBooking {
 
     public HotelBooking() {}
 
+    public HotelBooking(HotelBooking theHotelBooking) {
+        this.check_in_date = theHotelBooking.check_in_date;
+        this.check_out_date = theHotelBooking.check_out_date;
+        this.no_of_rooms = theHotelBooking.no_of_rooms;
+        this.room_type = theHotelBooking.room_type;
+        this.guest_count = theHotelBooking.guest_count;
+        this.status = theHotelBooking.status;
+        this.cost = theHotelBooking.cost;
+        this.number_of_nights = theHotelBooking.number_of_nights;
+        this.hotel_id = theHotelBooking.hotel_id;
+        this.room_id = theHotelBooking.room_id;
+        this.customer_id = theHotelBooking.customer_id;
+        this.booking_id = theHotelBooking.booking_id;
+        this.booking_date = theHotelBooking.booking_date;
+    }
+
+
+
+
     public HotelBooking(Date check_in_date, Date check_out_date, Integer no_of_rooms, String room_type, Integer guest_count, String status, int cost, Integer number_of_nights, Integer hotel_id, Integer room_id, Integer customer_id) {
         this.check_in_date = check_in_date;
         this.check_out_date = check_out_date;

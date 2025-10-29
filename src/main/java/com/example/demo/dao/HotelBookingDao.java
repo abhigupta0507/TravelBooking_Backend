@@ -1,9 +1,6 @@
 package com.example.demo.dao;
 
-import com.example.demo.model.BlogPost;
-import com.example.demo.model.HotelAssignment;
-import com.example.demo.model.HotelBooking;
-import com.example.demo.model.Payment;
+import com.example.demo.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,9 +34,9 @@ public class HotelBookingDao {
             ps.setDate(1, checkInDate);
             ps.setDate(2, checkOutDate);
             Timestamp now = new Timestamp(System.currentTimeMillis());
-            ps.setInt(3, noOfRooms);
+            ps.setInt(3, noOfRooms); // published_at
             ps.setString(4, roomType);
-            ps.setTimestamp(5,now);
+            ps.setTimestamp(5,now);// last_updated
             ps.setInt(6, guestCount);
             ps.setString(7,"PENDING");
             ps.setInt(8,cost);
@@ -57,6 +54,17 @@ public class HotelBookingDao {
         String sql= "SELECT * FROM Hotel_Booking WHERE booking_id=?";
         return jdbcTemplate.queryForObject(sql, new HotelBookingRowMapper(),id);
     }
+
+    public Integer updateHotelBookingStatus(String status,Integer booking_id) {
+        String sql= "UPDATE Hotel_Booking SET status=? WHERE booking_id=?";
+        return jdbcTemplate.update(sql  ,status,booking_id);
+    }
+
+    public Integer updateBookingStatus(String status,Integer booking_id) {
+        String sql= "UPDATE Booking SET booking_status=? WHERE booking_id=?";
+        return jdbcTemplate.update(sql  ,status,booking_id);
+    }
+
 
     public List<HotelBooking> getAllHotelBookingsOfCustomer(Integer userId) {
         String sql="SELECT * FROM Hotel_Booking WHERE customer_id=? AND (status=? OR status=?)";
@@ -90,6 +98,11 @@ public class HotelBookingDao {
     public int getAllottedRoomCount(Integer hotelId, Integer roomId) {
         String sql="SELECT total_rooms FROM RoomType WHERE hotel_id=? AND room_id=?  ";
         return jdbcTemplate.queryForObject(sql,Integer.class,hotelId,roomId);
+    }
+
+    public Booking getBookingForHotelBooking(Integer hotelBookingId){
+        String sql = "SELECT * FROM Booking WHERE hotel_booking_id=?";
+        return jdbcTemplate.queryForObject(sql,new BookingRowMapper(),hotelBookingId);
     }
 
     public void deletePendingBooking() {
@@ -145,6 +158,30 @@ public class HotelBookingDao {
             return booking;
         }
     }
+
+    /**
+     * A RowMapper to map a row from the Booking table to a Booking model object.
+     */
+    private static class BookingRowMapper implements RowMapper<Booking> {
+        @Override
+        public Booking mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Booking booking = new Booking();
+
+            booking.setBooking_id(rs.getInt("booking_id"));
+            booking.setBooking_type(rs.getString("booking_type"));
+            booking.setCreated_at(rs.getTimestamp("created_at"));
+            booking.setBooking_status(rs.getString("booking_status"));
+
+            // Use getObject for nullable integer columns to correctly handle NULLs.
+            booking.setPackage_booking_id(rs.getObject("package_booking_id", Integer.class));
+            booking.setHotel_booking_id(rs.getObject("hotel_booking_id", Integer.class));
+            booking.setPayment_id(rs.getObject("payment_id", Integer.class));
+
+            return booking;
+        }
+    }
+
+
     private static class HotelAssignmentRowMapper implements RowMapper<HotelAssignment> {
         @Override
         public HotelAssignment mapRow(ResultSet rs, int rowNum) throws SQLException {

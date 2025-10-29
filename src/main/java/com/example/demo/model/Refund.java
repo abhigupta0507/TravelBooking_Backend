@@ -11,7 +11,7 @@ public class Refund {
     private String refund_reason;
     private LocalDateTime processed_at;
     private String reference;
-    private String refund_status;
+    private String refund_status; // ("PROCESSING","COMPLETED","REJECTED")
 
     public Refund() {}
 
@@ -25,6 +25,12 @@ public class Refund {
         this.processed_at = processed_at;
         this.reference = reference;
         this.refund_status = refund_status;
+    }
+
+    public Refund(Integer payment_id, String refund_reason, String refund_status){
+        this.refund_status = refund_status;
+        this.refund_reason = refund_reason;
+        this.payment_id = payment_id;
     }
 
     public Integer getPayment_id() { return payment_id; }

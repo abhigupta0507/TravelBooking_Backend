@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dao.PaymentDao;
-import com.example.demo.daor.PackageBookingDao;
+import com.example.demo.dao.PackageBookingDao;
 import com.example.demo.model.Payment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

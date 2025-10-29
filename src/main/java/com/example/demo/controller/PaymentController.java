@@ -1,19 +1,24 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.ApiResponse;
-import com.example.demo.model.Hotel;
-import com.example.demo.model.HotelBooking;
-import com.example.demo.model.Payment;
-import com.example.demo.model.RoomType;
+import com.example.demo.dto.RefundDetailDto;
+import com.example.demo.dto.RefundRequestDto;
+import com.example.demo.dto.UpdateRefundRequestDto;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.model.*;
 import com.example.demo.service.EmailService;
 import com.example.demo.service.HotelBookingService;
 import com.example.demo.service.HotelService;
 import com.example.demo.service.PaymentService;
 import com.example.demo.util.JwtUtil;
+import com.google.api.gax.rpc.AlreadyExistsException;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -110,4 +115,144 @@ public class PaymentController {
                     .body(new ApiResponse<>(false, e.getMessage(), null));
         }
     }
+
+
+    @PostMapping("/{paymentId}/refund")
+    public ResponseEntity<ApiResponse<Refund>> requestRefund(
+            @PathVariable Integer paymentId,
+            @Valid @RequestBody RefundRequestDto refundDto,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            System.out.println(refundDto);
+            String token = authHeader.substring(7);
+            Integer userId = jwtUtil.getUserIdFromToken(token);
+
+            // The DTO only carries the reason. The service calculates the rest.
+            Refund refundRequest = new Refund();
+            refundRequest.setPayment_id(paymentId);
+            refundRequest.setRefund_reason(refundDto.getRefund_reason());
+
+            Refund createdRefund = paymentService.createRefundRequest(refundRequest, userId);
+
+            ApiResponse<Refund> response = new ApiResponse<>(true, "Refund request created successfully.", createdRefund);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (AlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict is better for existing resources
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN) // 403 Forbidden for auth failures
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, "An error occurred: " + e.getMessage(), null));
+        }
+    }
+
+
+    @GetMapping("/refund/{paymentId}")
+    public ResponseEntity<ApiResponse<?>> getRefundDetails(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer paymentId) {
+        try {
+            List<Refund> refundDetails = paymentService.getAllRefundDetails(authHeader,paymentId);
+            ApiResponse<List<Refund>> response = new ApiResponse<>(true, "Refund details retrieved successfully.", refundDetails);
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (UnauthorizedException | SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/refund/{paymentId}/{refundId}")
+    public ResponseEntity<ApiResponse<RefundDetailDto>> getRefundDetails(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer paymentId,
+            @PathVariable Integer refundId) {
+        try {
+            RefundDetailDto refundDetails = paymentService.getRefundDetails(authHeader, paymentId, refundId);
+            ApiResponse<RefundDetailDto> response = new ApiResponse<>(true, "Refund details retrieved successfully.", refundDetails);
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (UnauthorizedException | SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
+
+    /**
+     * Endpoint to get all refunds or filter them by status.
+     * Accessible only by admin staff.
+     *
+     * Example Usage:
+     * GET /api/refunds -> returns all refunds
+     * GET /api/refunds?status=PENDING -> returns all pending refunds
+     */
+    @GetMapping("/refunds")
+    public ResponseEntity<ApiResponse<List<Refund>>> getRefunds(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) String status) {
+        try {
+            List<Refund> refunds;
+            String message;
+
+            if (status != null) {
+                // Case 1: A status filter is provided
+                refunds = paymentService.getRefundsByStatus(authHeader, status);
+                message = "Successfully retrieved " + refunds.size() + " refund(s) with status: " + status;
+            } else {
+                // Case 2: No filter, get all refunds
+                refunds = paymentService.getAllRefunds(authHeader);
+                message = "Successfully retrieved all " + refunds.size() + " refund(s).";
+            }
+
+            ApiResponse<List<Refund>> response = new ApiResponse<>(true, message, refunds);
+            return ResponseEntity.ok(response);
+
+        } catch (SecurityException e) {
+            // Catches authorization failures from the service layer
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (RuntimeException e) {
+            // Catches other unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "An internal server error occurred.", null));
+        }
+    }
+
+    @PutMapping("/refund/{paymentId}/{refundId}")
+    public ResponseEntity<ApiResponse<Refund>> updateRefundStatus(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer paymentId,
+            @PathVariable Integer refundId,
+            @Valid @RequestBody UpdateRefundRequestDto requestDto) {
+        try {
+            Refund updatedRefund = paymentService.updateRefundStatus(authHeader, paymentId, refundId, requestDto);
+            ApiResponse<Refund> response = new ApiResponse<>(true, "Refund status updated successfully.", updatedRefund);
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (IllegalStateException e) {
+            // Catches attempts to update a finalized refund
+            return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict is a good status for this
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
 }
