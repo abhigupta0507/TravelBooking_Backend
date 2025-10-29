@@ -2,10 +2,9 @@ package com.example.demo.service;
 
 import com.example.demo.dao.*;
 import com.example.demo.dto.AddressDto;
+import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.*;
-import com.google.api.client.util.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -389,6 +388,45 @@ public class PackageBookingService {
         catch (Exception e){
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Cancels a hotel booking if the user is authorized and the booking is cancellable.
+     * @param bookingId The ID of the booking to cancel.
+     * @param userId The ID of the user attempting the cancellation.
+     * @return The updated PackageBooking object.
+     * @throws com.example.demo.exception.ResourceNotFoundException if the booking is not found.
+     * @throws UnauthorizedException if the user is not the owner of the booking.
+     * @throws IllegalStateException if the booking is already cancelled or completed.
+     */
+    public PackageBooking cancelPackageBooking(int bookingId, int userId) {
+        // Step 1: Fetch the booking. Handles "not found".
+        PackageBooking thePackageBooking = packageBookingDao.getPackageBookingById(bookingId);
+        Booking theParentBooking = packageBookingDao.getBookingForPackageBooking(thePackageBooking.getBooking_id());
+
+
+        // Step 2: Verify ownership.
+        if (thePackageBooking.getCustomer_id() != userId) {
+            throw new UnauthorizedException("You are not authorized to cancel this booking.");
+        }
+
+        // Step 3: Check if the booking is already in a final state.
+        String currentStatus = thePackageBooking.getStatus();
+        if ("CANCELLED".equalsIgnoreCase(currentStatus) || "COMPLETED".equalsIgnoreCase(currentStatus)) {
+            throw new IllegalStateException("Booking is already " + currentStatus + " and cannot be cancelled.");
+        }
+
+        // Step 4: Update the status in the database.
+        int packageBookingRowsAffected = packageBookingDao.updatePackageBookingStatus("CANCELLED", bookingId);
+        int bookingRowsAffected = packageBookingDao.updateBookingStatus("CANCELLED",theParentBooking.getBooking_id());
+        if (packageBookingRowsAffected == 0) {
+            // This could happen in a rare race condition or if the DB connection failed mid-way
+            throw new RuntimeException("Failed to update booking status in the database.");
+        }
+
+        // Step 5: Update the status in our local object and return it.
+        thePackageBooking.setStatus("CANCELLED");
+        return thePackageBooking;
     }
 
 }
