@@ -1,16 +1,15 @@
 package com.example.demo.service;
 
+import com.example.demo.dao.AuthDao;
 import com.example.demo.dao.HotelBookingDao;
+import com.example.demo.dao.PackageBookingDao;
 import com.example.demo.dao.PaymentDao;
 import com.example.demo.dto.RefundDetailDto;
 import com.example.demo.dto.UpdateRefundRequestDto;
 import com.example.demo.exception.AlreadyExistsException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
-import com.example.demo.model.Booking;
-import com.example.demo.model.HotelBooking;
-import com.example.demo.model.Payment;
-import com.example.demo.model.Refund;
+import com.example.demo.model.*;
 import com.example.demo.util.AuthorizationService;
 import com.example.demo.util.JwtUtil;
 import org.springframework.stereotype.Service;
@@ -25,14 +24,18 @@ public class PaymentService {
 
     private PaymentDao paymentDao;
     private HotelBookingDao hotelBookingDao;
+    private PackageBookingDao packageBookingDao;
+    private AuthDao authDao;
     private AuthorizationService authorizationService;
     private JwtUtil jwtUtil;
 
-    public PaymentService(PaymentDao paymentDao,JwtUtil jwtUtil,HotelBookingDao hotelBookingDao,AuthorizationService authorizationService) {
+    public PaymentService(AuthDao authDao, PaymentDao paymentDao,JwtUtil jwtUtil,HotelBookingDao hotelBookingDao,AuthorizationService authorizationService, PackageBookingDao packageBookingDao) {
         this.paymentDao = paymentDao;
         this.authorizationService = authorizationService;
         this.hotelBookingDao = hotelBookingDao;
+        this.packageBookingDao = packageBookingDao;
         this.jwtUtil=jwtUtil;
+        this.authDao = authDao;
     }
 
 
@@ -205,8 +208,27 @@ public class PaymentService {
             }
         }
 
+        if("HOTEL".equals(booking.getBooking_type())){
+            HotelBooking theHotelBooking = hotelBookingDao.getHotelBookingById(booking.getHotel_booking_id());
+            Customer theCustomer = authDao.findCustomerById(theHotelBooking.getCustomer_id());
+            return RefundDetailDto.from(refund, payment, booking, theHotelBooking, theCustomer);
+        }
+        else{
+            PackageBooking thePackageBooking = packageBookingDao.getPackageBookingById(booking.getPackage_booking_id());
+            Customer theCustomer = authDao.findCustomerById(thePackageBooking.getCustomer_id());
+            return RefundDetailDto.from(refund, payment, booking, thePackageBooking, theCustomer);
+        }
+    }
+
+    public List<Refund> getAllRefundDetails(String authHeader, Integer paymentId) {
+        // 1. Fetch all required data pieces from the DAO.
+        List<Refund> refund = paymentDao.findAllRefundById(paymentId);
+        if (refund == null) {
+            throw new ResourceNotFoundException("Refunds " + " for payment " + paymentId + " not found.");
+        }
+
         // 3. If authorization passes, assemble and return the DTO.
-        return RefundDetailDto.from(refund, payment, booking);
+        return refund;
     }
 
 }

@@ -1,9 +1,6 @@
 package com.example.demo.dao;
 
-import com.example.demo.model.Booking;
-import com.example.demo.model.Payment;
-import com.example.demo.model.Refund;
-import com.example.demo.model.User;
+import com.example.demo.model.*;
 import com.mysql.cj.result.Row;
 import org.springframework.cglib.core.Local;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -203,6 +200,21 @@ public class PaymentDao {
         String sql = "SELECT * FROM Refund WHERE payment_id = ? AND refund_id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, new RefundRowMapper(), paymentId, refundId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Finds all refund by its PaymentId.
+     * @param paymentId The ID of the parent payment.
+     * @return A Refund object, or null if not found.
+     */
+    public List<Refund> findAllRefundById(Integer paymentId) {
+        // Assuming you have a RefundRowMapper similar to what we created before
+        String sql = "SELECT * FROM Refund WHERE payment_id = ?";
+        try {
+            return jdbcTemplate.query(sql, new RefundRowMapper(), paymentId);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

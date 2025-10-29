@@ -11,7 +11,7 @@ public class Refund {
     private String refund_reason;
     private LocalDateTime processed_at;
     private String reference;
-    private String refund_status; // ("PENDING","COMPLETED","REJECTED")
+    private String refund_status; // ("PROCESSING","COMPLETED","REJECTED")
 
     public Refund() {}
 

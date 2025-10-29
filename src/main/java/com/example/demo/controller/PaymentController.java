@@ -149,6 +149,25 @@ public class PaymentController {
         }
     }
 
+
+    @GetMapping("/refund/{paymentId}")
+    public ResponseEntity<ApiResponse<?>> getRefundDetails(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Integer paymentId) {
+        try {
+            List<Refund> refundDetails = paymentService.getAllRefundDetails(authHeader,paymentId);
+            ApiResponse<List<Refund>> response = new ApiResponse<>(true, "Refund details retrieved successfully.", refundDetails);
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (UnauthorizedException | SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
+
     @GetMapping("/refund/{paymentId}/{refundId}")
     public ResponseEntity<ApiResponse<RefundDetailDto>> getRefundDetails(
             @RequestHeader("Authorization") String authHeader,
@@ -209,7 +228,7 @@ public class PaymentController {
         }
     }
 
-    @PutMapping("refund/{paymentId}/{refundId}")
+    @PutMapping("/refund/{paymentId}/{refundId}")
     public ResponseEntity<ApiResponse<Refund>> updateRefundStatus(
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer paymentId,
