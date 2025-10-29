@@ -60,6 +60,11 @@ public class HotelBookingDao {
         return jdbcTemplate.update(sql  ,status,booking_id);
     }
 
+    public Integer updateBookingStatus(String status,Integer booking_id) {
+        String sql= "UPDATE Booking SET booking_status=? WHERE booking_id=?";
+        return jdbcTemplate.update(sql  ,status,booking_id);
+    }
+
 
     public List<HotelBooking> getAllHotelBookingsOfCustomer(Integer userId) {
         String sql="SELECT * FROM Hotel_Booking WHERE customer_id=? AND (status=? OR status=?)";

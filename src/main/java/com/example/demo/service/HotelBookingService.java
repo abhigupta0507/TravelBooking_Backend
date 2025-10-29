@@ -76,6 +76,8 @@ public class HotelBookingService {
     public HotelBooking cancelHotelBooking(int bookingId, int userId) {
         // Step 1: Fetch the booking. Handles "not found".
         HotelBooking booking = getHotelBooking(bookingId);
+        Booking theParentBooking = hotelBookingDao.getBookingForHotelBooking(booking.getBooking_id());
+
 
         // Step 2: Verify ownership.
         if (booking.getCustomer_id() != userId) {
@@ -89,8 +91,9 @@ public class HotelBookingService {
         }
 
         // Step 4: Update the status in the database.
-        int rowsAffected = hotelBookingDao.updateHotelBookingStatus("CANCELLED", bookingId);
-        if (rowsAffected == 0) {
+        int hotelBookingRowsAffected = hotelBookingDao.updateHotelBookingStatus("CANCELLED", bookingId);
+        int bookingRowsAffected = hotelBookingDao.updateBookingStatus("CANCELLED",theParentBooking.getBooking_id());
+        if (hotelBookingRowsAffected == 0) {
             // This could happen in a rare race condition or if the DB connection failed mid-way
             throw new RuntimeException("Failed to update booking status in the database.");
         }
