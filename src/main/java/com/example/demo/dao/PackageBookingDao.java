@@ -192,6 +192,21 @@ public class PackageBookingDao {
         return jdbcTemplate.queryForObject(sql,new PackageBookingRowMapper(),packageBookingId);
     }
 
+    public Booking getBookingForPackageBooking(Integer packageBookingId){
+        String sql = "SELECT * FROM Booking WHERE package_booking_id=?";
+        return jdbcTemplate.queryForObject(sql,new PackageBookingDao.BookingRowMapper(),packageBookingId);
+    }
+
+    public Integer updatePackageBookingStatus(String status,Integer booking_id) {
+        String sql= "UPDATE Package_Booking SET status=? WHERE booking_id=?";
+        return jdbcTemplate.update(sql, status, booking_id);
+    }
+
+    public Integer updateBookingStatus(String status,Integer booking_id) {
+        String sql= "UPDATE Booking SET booking_status=? WHERE booking_id=?";
+        return jdbcTemplate.update(sql, status, booking_id);
+    }
+
     public void assignGuidesToPackageBooking(int packageId, int itemId, int guideId, int packageBookingId, int guideCost, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         String sql="INSERT INTO Guide_Assignment(assignment_date,duration,start_date,end_date,cost,status,package_booking_id,guide_id,item_id,package_id) VALUES(?,?,?,?,?,?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -361,4 +376,27 @@ public class PackageBookingDao {
             return booking;
         }
     }
+
+    /**
+     * A RowMapper to map a row from the Booking table to a Booking model object.
+     */
+    private static class BookingRowMapper implements RowMapper<Booking> {
+        @Override
+        public Booking mapRow(ResultSet rs, int rowNum) throws SQLException {
+            Booking booking = new Booking();
+
+            booking.setBooking_id(rs.getInt("booking_id"));
+            booking.setBooking_type(rs.getString("booking_type"));
+            booking.setCreated_at(rs.getTimestamp("created_at"));
+            booking.setBooking_status(rs.getString("booking_status"));
+
+            // Use getObject for nullable integer columns to correctly handle NULLs.
+            booking.setPackage_booking_id(rs.getObject("package_booking_id", Integer.class));
+            booking.setHotel_booking_id(rs.getObject("hotel_booking_id", Integer.class));
+            booking.setPayment_id(rs.getObject("payment_id", Integer.class));
+
+            return booking;
+        }
+    }
+
 }

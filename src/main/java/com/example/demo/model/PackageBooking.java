@@ -17,6 +17,17 @@ public class PackageBooking {
 
     public PackageBooking() {}
 
+    public PackageBooking(PackageBooking thePackageBooking){
+        this.booking_id = thePackageBooking.booking_id;
+        this.booking_date = thePackageBooking.booking_date;
+        this.status = thePackageBooking.status;
+        this.number_of_people = thePackageBooking.number_of_people;
+        this.total_cost = thePackageBooking.total_cost;
+        this.customer_id = thePackageBooking.customer_id;
+        this.package_id = thePackageBooking.package_id;
+        this.start_date=thePackageBooking.start_date;
+    }
+
     public PackageBooking(Integer booking_id, Timestamp booking_date, String status,
                           Integer number_of_people, int total_cost, Integer customer_id, Integer package_id, Date start_date) {
         this.booking_id = booking_id;
