@@ -474,10 +474,7 @@
 //}
 package com.example.demo.controller;
 
-import com.example.demo.dto.ApiResponse;
-import com.example.demo.dto.PackageBookingRequest;
-import com.example.demo.dto.ProductRequest;
-import com.example.demo.dto.StripeResponse;
+import com.example.demo.dto.*;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.HotelBooking;
@@ -617,7 +614,7 @@ public class PackageBookingController {
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
-            List<PackageBooking> bookings = packageBookingService.getAllPackageBookingsOfCustomer(userId, status);
+            List<PackageBookingDto> bookings = packageBookingService.getAllPackageBookingsOfCustomer(userId, status);
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Package bookings retrieved", bookings));
 

@@ -92,7 +92,13 @@ public class PaymentService {
             if (!hotelBooking.getCustomer_id().equals(userId)) {
                 throw new UnauthorizedException("You are not authorized to request a refund for this booking.");
             }
-        } // Add similar logic for "PACKAGE" bookings here...
+        }
+        else{
+            PackageBooking packageBooking = packageBookingDao.getPackageBookingById(theBooking.getPackage_booking_id());
+            if(!packageBooking.getCustomer_id().equals(userId)){
+                throw new UnauthorizedException("You are not authorized to request a refund for this booking.");
+            }
+        }
 
         // Step 4: Calculate refund amounts using BigDecimal for precision.
         BigDecimal processingCharge = thePayment.getAmount().multiply(new BigDecimal("0.10"));
@@ -176,7 +182,7 @@ public class PaymentService {
 
     public RefundDetailDto getRefundDetails(String authHeader, Integer paymentId, Integer refundId) {
         // 1. Fetch all required data pieces from the DAO.
-        authorizationService.verifyAdminStaff(authHeader);
+        authorizationService.verifyAdminStaff(authHeader); //currently only for admin
         Refund refund = paymentDao.findRefundById(paymentId, refundId);
         if (refund == null) {
             throw new ResourceNotFoundException("Refund with ID " + refundId + " for payment " + paymentId + " not found.");
@@ -220,15 +226,41 @@ public class PaymentService {
         }
     }
 
-    public List<Refund> getAllRefundDetails(String authHeader, Integer paymentId) {
-        // 1. Fetch all required data pieces from the DAO.
-        List<Refund> refund = paymentDao.findAllRefundById(paymentId);
-        if (refund == null) {
-            throw new ResourceNotFoundException("Refunds " + " for payment " + paymentId + " not found.");
+    /**
+     * Retrieves all refunds for a specific payment,
+     * ensuring the user is either the owner or an admin.
+     * @param authHeader The authorization token.
+     * @param paymentId The ID of the payment.
+     * @return A List of Refund objects.
+     */
+    public List<Refund> getAllUserRefundDetails(String authHeader, Integer paymentId) {
+        // Step 1: Fetch parent payment and booking to verify existence and ownership.
+        Payment payment = paymentDao.findPaymentById(paymentId);
+        Booking booking = paymentDao.getBookingByPaymentId(paymentId);
+
+        if (payment == null || booking == null) {
+            throw new ResourceNotFoundException("Payment or associated booking details not found for Payment ID: " + paymentId);
         }
 
-        // 3. If authorization passes, assemble and return the DTO.
-        return refund;
+        // Step 2: Perform Authorization Check (Owner or Admin).
+        String token = authHeader.substring(7);
+        Integer requestUserId = jwtUtil.getUserIdFromToken(token);
+        Integer ownerCustomerId = paymentDao.getCustomerIdForBooking(booking);
+
+        boolean isOwner = ownerCustomerId != null && ownerCustomerId.equals(requestUserId);
+
+        if (!isOwner) {
+            try {
+                authorizationService.verifyAdminStaff(authHeader);
+            } catch (SecurityException e) {
+                // User is not the owner and not an admin.
+                throw new UnauthorizedException("You are not authorized to view refunds for this payment.");
+            }
+        }
+
+        // Step 3: If authorization passed (isOwner or isAdmin), fetch and return the refunds.
+        // Assumes findAllRefundById is your DAO method to find all refunds for a paymentId.
+        return paymentDao.findAllRefundById(paymentId);
     }
 
 }

@@ -155,7 +155,7 @@ public class PaymentController {
             @RequestHeader("Authorization") String authHeader,
             @PathVariable Integer paymentId) {
         try {
-            List<Refund> refundDetails = paymentService.getAllRefundDetails(authHeader,paymentId);
+            List<Refund> refundDetails = paymentService.getAllUserRefundDetails(authHeader,paymentId);
             ApiResponse<List<Refund>> response = new ApiResponse<>(true, "Refund details retrieved successfully.", refundDetails);
             return ResponseEntity.ok(response);
 

@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dao.*;
 import com.example.demo.dto.AddressDto;
+import com.example.demo.dto.PackageBookingDto;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -369,13 +370,26 @@ public class PackageBookingService {
         }
     }
 
-    public List<PackageBooking> getAllPackageBookingsOfCustomer(Integer userId, String status) {
+    public List<PackageBookingDto> getAllPackageBookingsOfCustomer(Integer userId, String status) {
         try {
+            List<PackageBooking> thePackageBookings;
+            List<PackageBookingDto> thePackageBookingDtos = new ArrayList<>();
             if (status == null || status.equals("all")) {
-                return packageBookingDao.getAllPackageBookingsByCustomerId(userId);
+                thePackageBookings = packageBookingDao.getAllPackageBookingsByCustomerId(userId);
+
+                for(PackageBooking thePackageBooking: thePackageBookings){
+                    Booking theParentBooking = packageBookingDao.getBookingForPackageBooking(thePackageBooking.getBooking_id());
+                    thePackageBookingDtos.add(new PackageBookingDto(thePackageBooking,theParentBooking));
+                }
             } else {
-                return packageBookingDao.getPackageBookingsByCustomerIdAndStatus(userId, status);
+                thePackageBookings = packageBookingDao.getPackageBookingsByCustomerIdAndStatus(userId, status);
+
+                for(PackageBooking thePackageBooking: thePackageBookings){
+                    Booking theParentBooking = packageBookingDao.getBookingForPackageBooking(thePackageBooking.getBooking_id());
+                    thePackageBookingDtos.add(new PackageBookingDto(thePackageBooking,theParentBooking));
+                }
             }
+            return thePackageBookingDtos;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch package bookings: " + e.getMessage(), e);
         }
