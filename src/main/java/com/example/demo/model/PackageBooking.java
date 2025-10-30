@@ -14,6 +14,7 @@ public class PackageBooking {
     private Integer customer_id;
     private Integer package_id;
     private Date start_date;
+    private String package_name;
 
     public PackageBooking() {}
 
@@ -77,6 +78,9 @@ public class PackageBooking {
     public Integer getPackage_id() { return package_id; }
     public void setPackage_id(Integer package_id) { this.package_id = package_id; }
 
+    public String getPackage_name() { return package_name; }
+    public  void setPackage_name(String package_name) { this.package_name = package_name; }
+
     @Override
     public String toString() {
         return "PackageBooking{" +
@@ -88,6 +92,7 @@ public class PackageBooking {
                 ", customer_id=" + customer_id +
                 ", package_id=" + package_id +
                 ", start_date=" + start_date +
+                ", package_name='" + package_name + '\'' +
                 '}';
     }
 }

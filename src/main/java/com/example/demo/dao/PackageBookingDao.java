@@ -189,7 +189,12 @@ public class PackageBookingDao {
 
     public PackageBooking getPackageBookingById(int packageBookingId) {
         String sql="SELECT * FROM Package_Booking WHERE booking_id=?";
-        return jdbcTemplate.queryForObject(sql,new PackageBookingRowMapper(),packageBookingId);
+        PackageBooking packageBooking = jdbcTemplate.queryForObject(sql,new PackageBookingRowMapper(),packageBookingId);
+        String sql2 = "SELECT name FROM Tour_Package WHERE package_id=?";
+        String result = jdbcTemplate.queryForObject(sql2, String.class, packageBooking.getPackage_id());
+        packageBooking.setPackage_name(result);
+        System.out.println(packageBooking);
+        return packageBooking;
     }
 
     public Booking getBookingForPackageBooking(Integer packageBookingId){
