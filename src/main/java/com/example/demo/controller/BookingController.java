@@ -187,18 +187,20 @@ public class BookingController {
                         .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
             }
 
+
+            System.out.println(status);
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
             List<HotelBooking> hotelBookingsDB;
-            if (status == null) {
-                    hotelBookingsDB = hotelBookingService.getAllHotelBookingsOfCustomer(userId);
-            } else {
+            if (status!=null) {
                 hotelBookingsDB = hotelBookingService.getHotelBookingsOfCustomerByStatus(userId, status);
+            } else {
+                hotelBookingsDB = hotelBookingService.getAllHotelBookingsOfCustomer(userId);
             }
 
+            System.out.println("Founded hotel Bookings. Count: "+hotelBookingsDB.size());
             List<HotelBookingDto> hotelBookingDtoList = hotelBookingService.getAllHotelBookingsDtoOfCustomer(hotelBookingsDB);
-
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Successfully fetched bookings", hotelBookingDtoList));
         } catch (Exception e) {

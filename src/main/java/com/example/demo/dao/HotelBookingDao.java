@@ -65,7 +65,6 @@ public class HotelBookingDao {
         return jdbcTemplate.update(sql  ,status,booking_id);
     }
 
-
     public List<HotelBooking> getAllHotelBookingsOfCustomer(Integer userId) {
         String sql="SELECT * FROM Hotel_Booking WHERE customer_id=? AND (status=? OR status=?)";
         return jdbcTemplate.query(sql,new HotelBookingRowMapper(),userId,"CONFIRMED","FINISHED");
@@ -73,6 +72,7 @@ public class HotelBookingDao {
 
     public List<HotelBooking> getAllHotelBookingsOfCustomerByStatus(Integer userId,String status){
         String sql="SELECT * FROM Hotel_Booking WHERE customer_id=? AND status=?";
+        System.out.println(status);
         return jdbcTemplate.query(sql,new HotelBookingRowMapper(),userId,status);
     }
 
@@ -106,6 +106,8 @@ public class HotelBookingDao {
         Booking result = results.isEmpty() ? null : results.get(0);
         System.out.println(result);
         return result;
+//         System.out.println("In the DAO and about to fetch booking for hotel_booking_id: "+hotelBookingId);
+//         return jdbcTemplate.queryForObject(sql,new BookingRowMapper(),hotelBookingId);
     }
 
     public void deletePendingBooking() {
