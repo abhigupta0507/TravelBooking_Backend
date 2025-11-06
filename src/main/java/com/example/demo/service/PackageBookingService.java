@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dao.*;
 import com.example.demo.dto.AddressDto;
+import com.example.demo.dto.PackageAfterBookingDayDto;
 import com.example.demo.dto.PackageBookingDto;
 import com.example.demo.exception.UnauthorizedException;
 import com.example.demo.model.*;
@@ -368,6 +369,24 @@ public class PackageBookingService {
         } catch (Exception e) {
             throw new RuntimeException("Package booking not found", e);
         }
+    }
+
+    public List<PackageAfterBookingDayDto> getPackageAfterBookingDay(PackageBooking thePackageBooking) {
+        List<ItineraryItem> theItems = packageDAO.findAllItineraryItemsByPackageId(thePackageBooking.getPackage_id());
+        List<PackageAfterBookingDayDto> packageAfterBookingDayDtoList = new ArrayList<>();
+        for(ItineraryItem theItem: theItems){
+            GuideAssignment guideAssignment = packageBookingDao.getGuideAssignment(thePackageBooking.getBooking_id(),theItem.getPackage_id(),theItem.getItem_id());
+            Guide guide = guideDao.getGuideById(guideAssignment.getGuide_id());
+            TransportAssignment transportAssignment = packageBookingDao.getTransportAssignment(thePackageBooking.getBooking_id(),theItem.getPackage_id(),theItem.getItem_id());
+            Transport transport = transportDao.getTransportById(transportAssignment.getDriver_id());
+            HotelAssignment hotelAssignment = packageBookingDao.getHotelAssignment(thePackageBooking.getBooking_id(),theItem.getPackage_id(),theItem.getItem_id());
+            HotelBooking hotelBooking = hotelBookingDao.getHotelBookingById(hotelAssignment.getHotel_booking_id());
+            Hotel hotel = hotelDao.findHotelById(hotelBooking.getHotel_id());
+            RoomType room = hotelDao.findRoomByHotelAndRoomId(hotelBooking.getHotel_id(),hotelBooking.getRoom_id());
+            PackageAfterBookingDayDto packageAfterBookingDayDto = new PackageAfterBookingDayDto(room,hotel,hotelBooking,hotelAssignment,transport,transportAssignment,guide,guideAssignment);
+            packageAfterBookingDayDtoList.add(packageAfterBookingDayDto);
+        }
+        return packageAfterBookingDayDtoList;
     }
 
     public List<PackageBookingDto> getAllPackageBookingsOfCustomer(Integer userId, String status) {
