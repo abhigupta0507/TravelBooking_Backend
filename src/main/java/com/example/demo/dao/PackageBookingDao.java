@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.time.*;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class PackageBookingDao {
@@ -362,6 +363,7 @@ public class PackageBookingDao {
         jdbcTemplate.update(sql,newStatus,packageBookingId);
     }
 
+<<<<<<< Updated upstream
     /**
      * Fetches a specific GuideAssignment by its composite key.
      * @return A GuideAssignment object, or null if not found.
@@ -405,6 +407,68 @@ public class PackageBookingDao {
         }
     }
 
+=======
+    // Add these methods to PackageBookingDao.java
+
+    public List<Map<String, Object>> getGuideAssignmentsByBookingId(Integer packageBookingId) {
+        String sql = """
+        SELECT ga.*, g.first_name, g.last_name, g.primary_phone, g.primary_email,
+               i.title as activity_title, i.day_number, i.start_time, i.end_time,
+               i.street_name, i.city, i.state
+        FROM Guide_Assignment ga
+        JOIN Guide g ON ga.guide_id = g.guide_id
+        JOIN Itinerary_Item i ON ga.item_id = i.item_id AND ga.package_id = i.package_id
+        WHERE ga.package_booking_id = ?
+        ORDER BY i.day_number, i.start_time
+    """;
+
+        return jdbcTemplate.queryForList(sql, packageBookingId);
+    }
+
+    public List<Map<String, Object>> getTransportAssignmentsByBookingId(Integer packageBookingId) {
+        String sql = """
+        SELECT ta.*, t.first_name, t.last_name, t.vehicle_model, t.vehicle_type,
+               t.vehicle_reg_no, t.primary_phone, t.vehicle_seating_capacity,
+               i.title as activity_title, i.day_number
+        FROM Transport_Assignment ta
+        JOIN Transport t ON ta.driver_id = t.driver_id
+        JOIN Itinerary_Item i ON ta.item_id = i.item_id AND ta.package_id = i.package_id
+        WHERE ta.package_booking_id = ?
+        ORDER BY ta.start_date
+    """;
+
+        return jdbcTemplate.queryForList(sql, packageBookingId);
+    }
+
+    public List<Map<String, Object>> getHotelAssignmentsByBookingId(Integer packageBookingId) {
+        String sql = """
+        SELECT ha.*, hb.check_in_date, hb.check_out_date, hb.no_of_rooms, 
+               hb.room_type, hb.guest_count, hb.cost as hotel_cost,
+               h.name as hotel_name, h.street, h.city, h.state, h.pin,
+               h.primary_phone as hotel_phone, h.rating,
+               i.title as activity_title, i.day_number
+        FROM Hotel_Assignment ha
+        JOIN Hotel_Booking hb ON ha.hotel_booking_id = hb.booking_id
+        JOIN Hotel h ON hb.hotel_id = h.hotel_id
+        LEFT JOIN Itinerary_Item i ON ha.item_id = i.item_id AND ha.package_id = i.package_id
+        WHERE ha.package_booking_id = ?
+        ORDER BY hb.check_in_date
+    """;
+
+        return jdbcTemplate.queryForList(sql, packageBookingId);
+    }
+
+    public List<Map<String, Object>> getTravellersByBookingId(Integer packageBookingId) {
+        String sql = """
+        SELECT t.*
+        FROM Traveller t
+        JOIN Package_Traveler pt ON t.traveller_id = pt.traveler_id
+        WHERE pt.package_booking_id = ?
+    """;
+
+        return jdbcTemplate.queryForList(sql, packageBookingId);
+    }
+>>>>>>> Stashed changes
 
     private static class PackageBookingRowMapper implements RowMapper<PackageBooking> {
         @Override

@@ -14,7 +14,9 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -411,6 +413,178 @@ public class PackageBookingService {
             return thePackageBookingDtos;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch package bookings: " + e.getMessage(), e);
+        }
+    }
+
+    // Add this method to PackageBookingService.java
+
+    public Map<String, Object> getPackageBookingDetails(Integer packageBookingId, Integer userId) {
+        try {
+            // Get basic booking info
+            PackageBooking booking = packageBookingDao.getPackageBookingById(packageBookingId);
+
+            // Verify booking belongs to user
+            if (!booking.getCustomer_id().equals(userId)) {
+                throw new RuntimeException("Unauthorized access to booking");
+            }
+            System.out.println("booking: "+ booking);
+            // Get package details
+            TourPackage tourPackage = packageDAO.findPackageById(booking.getPackage_id());
+
+            // Get itinerary items
+            List<ItineraryItem> itineraryItems = packageDAO.findAllItineraryItemsByPackageId(booking.getPackage_id());
+
+            // Get guide assignments
+            List<Map<String, Object>> guideAssignments = packageBookingDao.getGuideAssignmentsByBookingId(packageBookingId);
+            System.out.println(guideAssignments);
+            // Get transport assignments
+            List<Map<String, Object>> transportAssignments = packageBookingDao.getTransportAssignmentsByBookingId(packageBookingId);
+            System.out.println(transportAssignments);
+            // Get hotel assignments
+            List<Map<String, Object>> hotelAssignments = packageBookingDao.getHotelAssignmentsByBookingId(packageBookingId);
+            System.out.println(hotelAssignments + "\n \n");
+            // Get travellers
+            List<Map<String, Object>> travellers = packageBookingDao.getTravellersByBookingId(packageBookingId);
+System.out.println(travellers);
+            // Organize data by day
+            Map<Integer, Map<String, Object>> dayWiseData = new HashMap<>();
+
+            for (ItineraryItem item : itineraryItems) {
+                int dayNum = item.getDay_number();
+
+                if (!dayWiseData.containsKey(dayNum)) {
+                    Map<String, Object> dayData = new HashMap<>();
+                    dayData.put("day_number", dayNum);
+                    dayData.put("activities", new ArrayList<Map<String, Object>>());
+                    dayData.put("hotels", new ArrayList<Map<String, Object>>());
+                    dayWiseData.put(dayNum, dayData);
+                }
+
+                System.out.println("\n"+ dayWiseData);
+                Map<String, Object> activity = new HashMap<>();
+                activity.put("item_id", item.getItem_id());
+                activity.put("title", item.getTitle());
+                activity.put("description", item.getDescription());
+                activity.put("start_time", item.getStart_time());
+                activity.put("end_time", item.getEnd_time());
+                activity.put("duration", item.getDuration());
+                activity.put("location", Map.of(
+                        "street", item.getStreet_name(),
+                        "city", item.getCity(),
+                        "state", item.getState(),
+                        "pin", item.getPin()
+                ));
+
+                System.out.println("\n"+ activity);
+
+                // Find guide for this activity
+                for (Map<String, Object> guide : guideAssignments) {
+                    if (guide.get("item_id").equals(item.getItem_id())) {
+                        activity.put("guide", Map.of(
+                                "name", guide.get("first_name") + " " + guide.get("last_name"),
+                                "phone", guide.get("primary_phone"),
+                                "email", guide.get("primary_email"),
+                                "cost", guide.get("cost")
+                        ));
+                        break;
+                    }
+                }
+
+                System.out.println("\n"+ activity);
+
+                // Find transport for this activity
+                List<Map<String, Object>> activityTransports = new ArrayList<>();
+                for (Map<String, Object> transport : transportAssignments) {
+                    if (transport.get("item_id").equals(item.getItem_id())) {
+                        activityTransports.add(Map.of(
+                                "driver_name", transport.get("first_name") + " " + transport.get("last_name"),
+                                "vehicle", transport.get("vehicle_model") + " (" + transport.get("vehicle_type") + ")",
+                                "reg_no", transport.get("vehicle_reg_no"),
+                                "phone", transport.get("primary_phone"),
+                                "pickup", Map.of(
+                                        "street", transport.get("pickup_street"),
+                                        "city", transport.get("pickup_city"),
+                                        "state", transport.get("pickup_state")
+                                ),
+                                "drop", Map.of(
+                                        "street", transport.get("drop_street"),
+                                        "city", transport.get("drop_city"),
+                                        "state", transport.get("drop_state")
+                                ),
+                                "cost", transport.get("cost")
+                        ));
+                    }
+                }
+                activity.put("transports", activityTransports);
+
+                System.out.println("TRANSPORTS ADDED :"+ activityTransports);
+
+                ((List<Map<String, Object>>) dayWiseData.get(dayNum).get("activities")).add(activity);
+            }
+
+            System.out.println("HOTEL ASSIGNMENTS" + hotelAssignments + "\n \n");
+             //Add hotels to day-wise data
+//            for (Map<String, Object> hotel : hotelAssignments) {
+//                Integer dayNum = (Integer) hotel.get("day_number");
+//                //System.out.println("DaywiseData"+dayWiseData);
+//                System.out.println(dayWiseData.containsKey(dayNum));
+//                if (dayNum != null && dayWiseData.containsKey(dayNum)) {
+//
+//System.out.println("PRINTING DAY 3 +" +hotel);
+//                    Map<String, Object> hotelInfo = Map.of(
+//                            "name", hotel.get("hotel_name"),
+//                            "address", hotel.get("street") + ", " + hotel.get("city") + ", " + hotel.get("state") + " - " + hotel.get("pin"),
+//                            "phone", hotel.get("hotel_phone"),
+//                            "rating", hotel.get("rating"),
+//                            "check_in", hotel.get("check_in_date"),
+//                            "check_out", hotel.get("check_out_date"),
+//                            "rooms", hotel.get("no_of_rooms"),
+//                            "room_type", hotel.get("room_type"),
+//                            "cost", hotel.get("hotel_cost")
+//                    );
+//
+//                    System.out.println("PRINTING DAY 3 +" +hotel);
+//                    ((List<Map<String, Object>>) dayWiseData.get(dayNum).get("hotels")).add(hotelInfo);
+//                    System.out.println("DaywiseData"+dayWiseData);
+//                    System.out.println("\n SOME HOTEL INFO for day"+dayNum+ hotelInfo);
+//                }
+//            }
+
+
+            System.out.println("HOTELS ADDED :"+ dayWiseData);
+
+            // Prepare final response
+            Map<String, Object> response = new HashMap<>();
+            response.put("booking", Map.of(
+                    "booking_id", booking.getBooking_id(),
+                    "booking_date", booking.getBooking_date(),
+                    "start_date", booking.getStart_date(),
+                    "status", booking.getStatus(),
+                    "number_of_people", booking.getNumber_of_people(),
+                    "total_cost", booking.getTotal_cost()
+            ));
+
+            response.put("package", Map.of(
+                    "package_id", tourPackage.getPackageId(),
+                    "name", tourPackage.getName(),
+                    "tour_type", tourPackage.getTour_type(),
+                    "duration_days", tourPackage.getDuration_days(),
+                    "image_url", tourPackage.getImage_url(),
+                    "itinerary_summary", tourPackage.getItinerary_summary()
+            ));
+
+            response.put("travellers", travellers);
+
+            // Convert day-wise data to sorted list
+            List<Map<String, Object>> itinerary = new ArrayList<>(dayWiseData.values());
+            itinerary.sort((a, b) -> ((Integer) a.get("day_number")).compareTo((Integer) b.get("day_number")));
+            response.put("itinerary", itinerary);
+
+            System.out.println("\n \n \n \n \n"+"FINAL ITINERARY: "+itinerary);
+            return response;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
