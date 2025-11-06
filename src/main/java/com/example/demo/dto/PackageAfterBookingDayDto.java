@@ -3,6 +3,7 @@ package com.example.demo.dto;
 import com.example.demo.model.*;
 
 public class PackageAfterBookingDayDto {
+    private ItineraryItem itineraryItem;
     private GuideAssignment guideAssignment;
     private Guide guide;
     private TransportAssignment transportAssignment;
@@ -11,6 +12,25 @@ public class PackageAfterBookingDayDto {
     private HotelBooking hotelBooking;
     private Hotel hotel;
     private RoomType roomType;
+
+    public PackageAfterBookingDayDto() {
+    }
+
+    public PackageAfterBookingDayDto(ItineraryItem itineraryItem) {
+        this.itineraryItem = itineraryItem;
+    }
+
+    public PackageAfterBookingDayDto(RoomType roomType, Hotel hotel, HotelBooking hotelBooking, HotelAssignment hotelAssignment, Transport transport, TransportAssignment transportAssignment, Guide guide, GuideAssignment guideAssignment, ItineraryItem itineraryItem) {
+        this.roomType = roomType;
+        this.hotel = hotel;
+        this.hotelBooking = hotelBooking;
+        this.hotelAssignment = hotelAssignment;
+        this.transport = transport;
+        this.transportAssignment = transportAssignment;
+        this.guide = guide;
+        this.guideAssignment = guideAssignment;
+        this.itineraryItem = itineraryItem;
+    }
 
     public PackageAfterBookingDayDto(RoomType roomType, Hotel hotel, HotelBooking hotelBooking, HotelAssignment hotelAssignment, Transport transport, TransportAssignment transportAssignment, Guide guide, GuideAssignment guideAssignment) {
         this.roomType = roomType;
@@ -21,6 +41,15 @@ public class PackageAfterBookingDayDto {
         this.transportAssignment = transportAssignment;
         this.guide = guide;
         this.guideAssignment = guideAssignment;
+    }
+
+
+    public ItineraryItem getItineraryItem() {
+        return itineraryItem;
+    }
+
+    public void setItineraryItem(ItineraryItem itineraryItem) {
+        this.itineraryItem = itineraryItem;
     }
 
     public RoomType getRoomType() {

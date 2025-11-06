@@ -474,6 +474,10 @@
 //}
 package com.example.demo.controller;
 
+import com.example.demo.dto.*;
+import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.UnauthorizedException;
+import com.example.demo.model.HotelBooking;
 import com.example.demo.dto.ApiResponse;
 import com.example.demo.dto.PackageBookingRequest;
 import com.example.demo.dto.ProductRequest;
@@ -482,6 +486,7 @@ import com.example.demo.model.PackageBooking;
 import com.example.demo.service.PackageBookingService;
 import com.example.demo.service.StripeService;
 import com.example.demo.util.JwtUtil;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -610,12 +615,10 @@ public class PackageBookingController {
                         .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
             }
 
-            //System.out.println(status);
-
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
-            List<PackageBooking> bookings = packageBookingService.getAllPackageBookingsOfCustomer(userId, status);
+            List<PackageBookingDto> bookings = packageBookingService.getAllPackageBookingsOfCustomer(userId, status);
 
             return ResponseEntity.ok(new ApiResponse<>(true, "Package bookings retrieved", bookings));
 
@@ -625,7 +628,40 @@ public class PackageBookingController {
         }
     }
 
-    // Add this method to PackageBookingController.java
+    @PostMapping("/{packageBookingId}/cancel")
+    public ResponseEntity<ApiResponse<?>> cancelPackageBookingById(
+            @PathVariable int packageBookingId,
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            // 1. Basic Auth Header Check (moved token parsing to service if preferred, but okay here too)
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
+            }
+            String token = authHeader.substring(7);
+            int userId = jwtUtil.getUserIdFromToken(token); // Ensure this handles potential token errors
+
+            // 2. Delegate all logic to the service
+            PackageBooking cancelledPackageBooking = packageBookingService.cancelPackageBooking(packageBookingId, userId);
+
+            // 3. Return success response
+            return ResponseEntity.ok(new ApiResponse<>(true, "Package booking cancelled successfully.", cancelledPackageBooking));
+
+        } catch (JwtException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, "Invalid or expired token.", null));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (IllegalStateException e) {
+            // Catch attempts to cancel an already finalized booking
+            return ResponseEntity.status(HttpStatus.CONFLICT) // 409 Conflict is appropriate
+                    .body(new ApiResponse<>(false, e.getMessage(), null));
+        }
+    }
 
     /**
      * Get detailed package booking information including itinerary, guides, transport, hotels
@@ -675,6 +711,8 @@ public class PackageBookingController {
                         .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
             }
 
+            System.out.println("Heoolo");
+
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
@@ -689,7 +727,7 @@ public class PackageBookingController {
 
             // 3. Now that user is authorized, fetch the complex details
             List<PackageAfterBookingDayDto> theDetails = packageBookingService.getPackageAfterBookingDay(booking);
-
+            System.out.println(theDetails);
             // 4. FIXED: Return the detailed list, not the simple 'booking' object
             return ResponseEntity.ok(new ApiResponse<>(true, "Package booking details retrieved", theDetails));
 

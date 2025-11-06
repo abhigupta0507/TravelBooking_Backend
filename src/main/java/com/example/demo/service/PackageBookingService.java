@@ -377,15 +377,34 @@ public class PackageBookingService {
         List<ItineraryItem> theItems = packageDAO.findAllItineraryItemsByPackageId(thePackageBooking.getPackage_id());
         List<PackageAfterBookingDayDto> packageAfterBookingDayDtoList = new ArrayList<>();
         for(ItineraryItem theItem: theItems){
+//            System.out.println(theItem);
+//            System.out.println(thePackageBooking.getBooking_id());
+//            System.out.println(theItem.getPackage_id());
+//            System.out.println(theItem.getItem_id());
             GuideAssignment guideAssignment = packageBookingDao.getGuideAssignment(thePackageBooking.getBooking_id(),theItem.getPackage_id(),theItem.getItem_id());
+//            System.out.println(guideAssignment);
             Guide guide = guideDao.getGuideById(guideAssignment.getGuide_id());
+//            System.out.println(guide);
             TransportAssignment transportAssignment = packageBookingDao.getTransportAssignment(thePackageBooking.getBooking_id(),theItem.getPackage_id(),theItem.getItem_id());
+//            System.out.println(transportAssignment);
             Transport transport = transportDao.getTransportById(transportAssignment.getDriver_id());
+//            System.out.println(transport);
+//            System.out.println(theItem.getItem_id());
             HotelAssignment hotelAssignment = packageBookingDao.getHotelAssignment(thePackageBooking.getBooking_id(),theItem.getPackage_id(),theItem.getItem_id());
+//            System.out.println(hotelAssignment);
+            if(hotelAssignment == null){
+//                PackageAfterBookingDayDto packageAfterBookingDayDto = new PackageAfterBookingDayDto(theItem);
+//                packageAfterBookingDayDtoList.add(packageAfterBookingDayDto);
+                continue;
+            }
             HotelBooking hotelBooking = hotelBookingDao.getHotelBookingById(hotelAssignment.getHotel_booking_id());
+//            System.out.println(hotelBooking);
             Hotel hotel = hotelDao.findHotelById(hotelBooking.getHotel_id());
+//            System.out.println(hotel);
             RoomType room = hotelDao.findRoomByHotelAndRoomId(hotelBooking.getHotel_id(),hotelBooking.getRoom_id());
-            PackageAfterBookingDayDto packageAfterBookingDayDto = new PackageAfterBookingDayDto(room,hotel,hotelBooking,hotelAssignment,transport,transportAssignment,guide,guideAssignment);
+//            System.out.println(room);
+
+            PackageAfterBookingDayDto packageAfterBookingDayDto = new PackageAfterBookingDayDto(room,hotel,hotelBooking,hotelAssignment,transport,transportAssignment,guide,guideAssignment,theItem);
             packageAfterBookingDayDtoList.add(packageAfterBookingDayDto);
         }
         return packageAfterBookingDayDtoList;
