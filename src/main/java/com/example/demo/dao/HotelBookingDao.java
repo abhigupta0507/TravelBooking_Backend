@@ -102,8 +102,12 @@ public class HotelBookingDao {
 
     public Booking getBookingForHotelBooking(Integer hotelBookingId){
         String sql = "SELECT * FROM Booking WHERE hotel_booking_id=?";
-        System.out.println("In the DAO and about to fetch booking for hotel_booking_id: "+hotelBookingId);
-        return jdbcTemplate.queryForObject(sql,new BookingRowMapper(),hotelBookingId);
+        List<Booking> results = jdbcTemplate.query(sql, new BookingRowMapper(), hotelBookingId);
+        Booking result = results.isEmpty() ? null : results.get(0);
+        System.out.println(result);
+        return result;
+//         System.out.println("In the DAO and about to fetch booking for hotel_booking_id: "+hotelBookingId);
+//         return jdbcTemplate.queryForObject(sql,new BookingRowMapper(),hotelBookingId);
     }
 
     public void deletePendingBooking() {
