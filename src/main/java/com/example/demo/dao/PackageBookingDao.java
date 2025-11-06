@@ -12,10 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.List;
 
 @Repository
@@ -365,6 +362,49 @@ public class PackageBookingDao {
         jdbcTemplate.update(sql,newStatus,packageBookingId);
     }
 
+    /**
+     * Fetches a specific GuideAssignment by its composite key.
+     * @return A GuideAssignment object, or null if not found.
+     */
+    public GuideAssignment getGuideAssignment(Integer packageBookingId, Integer packageId, Integer itemId) {
+        String sql = "SELECT * FROM Guide_Assignment WHERE package_booking_id = ? AND package_id = ? AND item_id = ?";
+        try {
+            // FIXED: Added the GuideAssignmentRowMapper as the second argument
+            return jdbcTemplate.queryForObject(sql, new GuideAssignmentRowMapper(), packageBookingId, packageId, itemId);
+        } catch (EmptyResultDataAccessException e) {
+            // This is expected if no assignment is found.
+            return null;
+        }
+    }
+
+    /**
+     * Fetches a specific GuideAssignment by its composite key.
+     * @return A GuideAssignment object, or null if not found.
+     */
+    public TransportAssignment getTransportAssignment(Integer packageBookingId, Integer packageId, Integer itemId) {
+        String sql = "SELECT * FROM Transport_Assignment WHERE package_booking_id = ? AND package_id = ? AND item_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new TransportAssignmentRowMapper(), packageBookingId, packageId, itemId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Fetches a specific HotelAssignment by its composite key.
+     * @return A HotelAssignment object, or null if not found.
+     */
+    public HotelAssignment getHotelAssignment(Integer packageBookingId, Integer packageId, Integer itemId) {
+        String sql = "SELECT * FROM Hotel_Assignment WHERE package_booking_id = ? AND package_id = ? AND item_id = ?";
+        try {
+            // FIXED: Now uses the correct HotelAssignmentRowMapper
+            return jdbcTemplate.queryForObject(sql, new HotelAssignmentRowMapper(), packageBookingId, packageId, itemId);
+        } catch (EmptyResultDataAccessException e) {
+            // Expected if no assignment is found
+            return null;
+        }
+    }
+
 
     private static class PackageBookingRowMapper implements RowMapper<PackageBooking> {
         @Override
@@ -403,5 +443,94 @@ public class PackageBookingDao {
             return booking;
         }
     }
+
+    /**
+     * A private RowMapper class to map a row from the Guide_Assignment table
+     * to a GuideAssignment Java object.
+     */
+    private static class GuideAssignmentRowMapper implements RowMapper<GuideAssignment> {
+        @Override
+        public GuideAssignment mapRow(ResultSet rs, int rowNum) throws SQLException {
+            GuideAssignment assignment = new GuideAssignment();
+
+            assignment.setAssignment_id(rs.getInt("assignment_id"));
+            assignment.setAssignment_date(rs.getTimestamp("assignment_date"));
+            assignment.setDuration(rs.getInt("duration"));
+            assignment.setStart_date(rs.getTimestamp("start_date"));
+            assignment.setStart_time(rs.getObject("start_time", LocalTime.class));
+            assignment.setEnd_date(rs.getTimestamp("end_date"));
+            assignment.setEnd_time(rs.getObject("end_time", LocalTime.class));
+            assignment.setCost(rs.getInt("cost"));
+            assignment.setStatus(rs.getString("status"));
+            assignment.setPackage_booking_id(rs.getInt("package_booking_id"));
+            assignment.setGuide_id(rs.getInt("guide_id"));
+            assignment.setItem_id(rs.getInt("item_id"));
+            assignment.setPackage_id(rs.getInt("package_id"));
+
+            return assignment;
+        }
+    }
+
+    public class TransportAssignmentRowMapper implements RowMapper<TransportAssignment> {
+        @Override
+        public TransportAssignment mapRow(ResultSet rs, int rowNum) throws SQLException {
+            TransportAssignment assignment = new TransportAssignment();
+
+            assignment.setAssignment_id(rs.getInt("assignment_id"));
+            assignment.setPickup_street(rs.getString("pickup_street"));
+            assignment.setPickup_city(rs.getString("pickup_city"));
+            assignment.setPickup_state(rs.getString("pickup_state"));
+            assignment.setPickup_pin(rs.getString("pickup_pin"));
+            assignment.setDrop_street(rs.getString("drop_street"));
+            assignment.setDrop_city(rs.getString("drop_city"));
+            assignment.setDrop_state(rs.getString("drop_state"));
+            assignment.setDrop_pin(rs.getString("drop_pin"));
+            assignment.setEst_time(rs.getString("est_time"));
+
+            // Map DATE and TIME columns correctly
+            assignment.setStart_date(rs.getObject("start_date", LocalDate.class));
+            assignment.setEnd_date(rs.getObject("end_date", LocalDate.class));
+
+            // Map DECIMAL columns to BigDecimal
+            assignment.setTotal_distance(rs.getInt("total_distance"));
+            assignment.setCost(rs.getInt("cost"));
+
+            assignment.setStatus(rs.getString("status"));
+
+            // Map nullable foreign keys safely
+            assignment.setPackage_booking_id(rs.getObject("package_booking_id", Integer.class));
+            assignment.setItem_id(rs.getObject("item_id", Integer.class));
+            assignment.setPackage_id(rs.getObject("package_id", Integer.class));
+            assignment.setDriver_id(rs.getObject("driver_id", Integer.class));
+
+            return assignment;
+        }
+    }
+
+
+
+    /**
+     * A private RowMapper class to map a row from the Hotel_Assignment table
+     * to a HotelAssignment Java object.
+     */
+    private static class HotelAssignmentRowMapper implements RowMapper<HotelAssignment> {
+        @Override
+        public HotelAssignment mapRow(ResultSet rs, int rowNum) throws SQLException {
+            HotelAssignment assignment = new HotelAssignment();
+
+            assignment.setHotel_assignment_id(rs.getInt("hotel_assignment_id"));
+            assignment.setCreated_at(rs.getTimestamp("created_at"));
+
+            // Use getObject for nullable foreign keys to safely handle NULLs
+            assignment.setPackage_booking_id(rs.getObject("package_booking_id", Integer.class));
+            assignment.setHotel_booking_id(rs.getObject("hotel_booking_id", Integer.class));
+            assignment.setPackage_id(rs.getObject("package_id", Integer.class));
+            assignment.setItem_id(rs.getObject("item_id", Integer.class));
+
+            return assignment;
+        }
+    }
+
+
 
 }
