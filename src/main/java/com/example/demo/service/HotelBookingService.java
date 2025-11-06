@@ -116,7 +116,9 @@ public class HotelBookingService {
         List<HotelBookingDto> hotelBookingDtoList = new ArrayList<>();
 
         for(HotelBooking theHotelBooking: hotelBookingsDB){
+            System.out.println("Fetching booking for hotel_booking_id: "+theHotelBooking.getBooking_id());
             Booking theParentBooking = hotelBookingDao.getBookingForHotelBooking(theHotelBooking.getBooking_id());
+            System.out.println(theParentBooking.getBooking_id());
             hotelBookingDtoList.add(new HotelBookingDto(theHotelBooking,theParentBooking));
         }
 
@@ -125,6 +127,7 @@ public class HotelBookingService {
 
     public List<HotelBooking> getHotelBookingsOfCustomerByStatus(int userId,String status){
         try{
+            System.out.println("In service for finding all hotels by status: "+ status);
             return hotelBookingDao.getAllHotelBookingsOfCustomerByStatus(userId,status);
         }
         catch (Exception e){
