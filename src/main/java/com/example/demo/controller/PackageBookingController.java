@@ -611,6 +611,8 @@ public class PackageBookingController {
                         .body(new ApiResponse<>(false, "Missing or invalid Authorization header", null));
             }
 
+            //System.out.println(status);
+
             String token = authHeader.substring(7);
             Integer userId = jwtUtil.getUserIdFromToken(token);
 
