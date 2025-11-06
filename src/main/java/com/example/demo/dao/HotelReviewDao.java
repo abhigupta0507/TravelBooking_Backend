@@ -49,14 +49,21 @@ public class HotelReviewDao {
             JOIN Hotel_Booking hb ON hr.hotel_booking_id = hb.booking_id
             WHERE hb.booking_id = ? AND hb.status = 'FINISHED'
             """;
-        return jdbcTemplate.queryForObject(sql, new HotelReviewRowMapper(), bookingId);
+        List<HotelReview> reviews = jdbcTemplate.query(sql, new HotelReviewRowMapper(), bookingId);
+        if (reviews.isEmpty()) {
+            return null;
+        }
+        return reviews.get(0);
     }
 
     // Add a review (use checkout_date from booking for stay_date)
     public Integer createHotelReview(HotelReview review, Integer bookingId) {
         //  Fetch check_out_date from Hotel_Booking
         String getDateSql = "SELECT check_out_date FROM Hotel_Booking WHERE booking_id = ?";
+        System.out.println(review);
         Date checkoutDate = jdbcTemplate.queryForObject(getDateSql, Date.class, bookingId);
+        System.out.println(checkoutDate);
+        System.out.println(bookingId);
 
 
         String sql = """
@@ -66,6 +73,15 @@ public class HotelReviewDao {
             """;
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
+        System.out.println("Preparing SQL: " + sql);
+        System.out.println("1️⃣ overall_rating = " + review.getOverall_rating());
+        System.out.println("2️⃣ cleanliness_rating = " + review.getCleanliness_rating());
+        System.out.println("3️⃣ review_title = " + review.getReview_title());
+        System.out.println("4️⃣ review_body = " + review.getReview_body());
+        System.out.println("5️⃣ stay_date (checkoutDate) = " + checkoutDate);
+        System.out.println("6️⃣ created_at = " + Timestamp.valueOf(LocalDateTime.now()));
+        System.out.println("7️⃣ booking_id = " + bookingId);
+
 
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);

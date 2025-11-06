@@ -93,6 +93,7 @@ public class HotelReviewController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(new ApiResponse<>(false, "Only customers can add reviews", null));
             }
+            System.out.println(payload);
 
             // Extract review fields
             HotelReview review = new HotelReview();
